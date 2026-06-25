@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Report a Sighting — Don't Touch My Birdie!</title>
+  <link rel="icon" href="logo.png" type="image/png">
+  <link rel="stylesheet" href="css/app.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <style>
+    .report-hero {
+      background: linear-gradient(135deg, #004D40 0%, #1B5E20 60%, #1565C0 100%);
+      padding: 48px 0 32px;
+    }
+    .report-hero h1 { color: white; margin-bottom: 8px; }
+    .report-hero p { color: rgba(255,255,255,0.7); }
+    .report-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 32px;
+      align-items: start;
+    }
+    @media (max-width: 900px) { .report-layout { grid-template-columns: 1fr; } }
+    #sighting-map {
+      height: 320px;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border);
+      overflow: hidden;
+    }
+    .map-pick-label {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+    .coords-display {
+      background: var(--bg-2);
+      border-radius: var(--radius-sm);
+      padding: 8px 12px;
+      font-size: 0.8rem;
+      font-family: monospace;
+      color: var(--forest);
+      margin-top: 8px;
+    }
+    .photo-preview-wrap {
+      position: relative;
+      display: none;
+      margin-bottom: 12px;
+    }
+    .photo-preview-wrap.visible { display: block; }
+    .photo-preview {
+      width: 100%;
+      max-height: 200px;
+      object-fit: cover;
+      border-radius: var(--radius-md);
+    }
+    .recent-sightings {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+    }
+    .sighting-item {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .sighting-item:last-child { border-bottom: none; }
+    .sighting-thumb {
+      width: 56px;
+      height: 56px;
+      border-radius: var(--radius-sm);
+      object-fit: cover;
+      flex-shrink: 0;
+      background: var(--bg-3);
+    }
+    .sighting-meta { flex: 1; min-width: 0; }
+    .sighting-bird-name { font-weight: 700; font-size: 0.9rem; margin-bottom: 2px; }
+    .sighting-info { font-size: 0.78rem; color: var(--text-muted); }
+    .sighting-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--forest);
+      margin-top: 6px;
+      flex-shrink: 0;
+    }
+  </style>
+</head>
+<body>
+<div id="navbar-mount"></div>
+<div class="page-wrapper">
+
+  <div class="report-hero">
+    <div class="container">
+      <div class="section-eyebrow" style="color:rgba(255,255,255,0.6);margin-bottom:10px">📍 Citizen Science</div>
+      <h1>Report a Bird Sighting</h1>
+      <p>Your observations help build a living map of Philippine bird populations. Every sighting counts!</p>
+    </div>
+  </div>
+
+  <section class="section">
+    <div class="container">
+      <div class="report-layout">
+        <!-- Form -->
+        <div>
+          <div class="report-form" id="sighting-form">
+            <div style="font-family:'Bricolage Grotesque',sans-serif;font-size:1.2rem;font-weight:700;margin-bottom:20px">📋 Sighting Details</div>
+
+            <div class="form-group">
+              <label class="form-label">Bird Species *</label>
+              <select class="form-control" id="bird-select">
+                <option value="">-- Select a bird --</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Or type a bird name</label>
+              <input type="text" class="form-control" id="custom-bird" placeholder="e.g. Philippine Eagle, Kingfisher...">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Date & Time *</label>
+              <input type="datetime-local" class="form-control" id="sighting-date">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Number of Birds Seen</label>
+              <input type="number" class="form-control" id="bird-count" value="1" min="1">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Habitat Type</label>
+              <select class="form-control" id="habitat-select">
+                <option value="">-- Select habitat --</option>
+                <option>Forest</option>
+                <option>Wetland</option>
+                <option>Coastal</option>
+                <option>Grassland</option>
+                <option>Urban</option>
+                <option>Agricultural</option>
+                <option>Mountain</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Behavior Observed</label>
+              <input type="text" class="form-control" id="behavior" placeholder="e.g. feeding, singing, nesting...">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Notes</label>
+              <textarea class="form-control" id="notes" rows="3" placeholder="Additional observations, weather conditions, etc."></textarea>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Photo (optional)</label>
+              <div class="photo-preview-wrap" id="photo-preview-wrap">
+                <img src="" id="photo-preview" class="photo-preview" alt="Preview">
+              </div>
+              <div class="upload-zone" style="padding:24px" onclick="document.getElementById('photo-input').click()">
+                <div style="font-size:1.5rem;margin-bottom:6px">📷</div>
+                <div style="font-size:0.85rem;font-weight:500">Click to upload photo</div>
+                <div style="font-size:0.75rem;color:var(--text-muted)">JPG, PNG supported</div>
+              </div>
+              <input type="file" id="photo-input" accept="image/*" style="display:none" onchange="previewPhoto(event)">
+            </div>
+
+            <button class="btn btn-primary" style="width:100%;margin-top:8px" onclick="submitSighting()">
+              📍 Submit Sighting Report
+            </button>
+
+            <p style="font-size:0.75rem;color:var(--text-muted);margin-top:8px;text-align:center">
+              <span id="auth-note"></span>
+            </p>
+          </div>
+        </div>
+
+        <!-- Map + Recent Sightings -->
+        <div style="display:flex;flex-direction:column;gap:20px">
+          <div class="card" style="padding:20px">
+            <div style="font-family:'Bricolage Grotesque',sans-serif;font-size:0.95rem;font-weight:700;margin-bottom:12px">📍 Pin Your Location</div>
+            <p class="map-pick-label">Click the map to set the sighting location, or use GPS below.</p>
+            <div id="sighting-map"></div>
+            <div class="coords-display" id="coords-display">No location selected</div>
+            <button class="btn btn-sm btn-secondary" style="margin-top:8px" onclick="useGPS()">📡 Use My GPS Location</button>
+          </div>
+
+          <div class="recent-sightings" id="recent-sightings">
+            <div style="font-family:'Bricolage Grotesque',sans-serif;font-size:0.95rem;font-weight:700;margin-bottom:16px">🕐 Recent Sightings</div>
+            <div id="sightings-list"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Success Banner (hidden by default) -->
+  <div id="success-banner" style="display:none;position:fixed;top:80px;left:50%;transform:translateX(-50%);z-index:9000;background:var(--forest);color:white;padding:16px 32px;border-radius:var(--radius-lg);box-shadow:var(--shadow-lg);text-align:center;font-family:'Bricolage Grotesque',sans-serif;font-weight:700">
+    ✅ Sighting Reported! +15 XP
+  </div>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-bottom">
+        <span>© 2025 Don't Touch My Birdie!</span>
+        <a href="index.html" style="color:var(--text-muted)">← Back to Home</a>
+      </div>
+    </div>
+  </footer>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="data/birds.js"></script>
+<script src="js/auth.js"></script>
+<script>
+  let selectedLat = null;
+  let selectedLng = null;
+  let sightingMap;
+  let locationMarker = null;
+  let photoDataUrl = null;
+
+  window.addEventListener('DOMContentLoaded', () => {
+    renderNavbar('report');
+
+    const user = AUTH.getUser();
+    const authNote = document.getElementById('auth-note');
+    if (!user) {
+      authNote.innerHTML = '⚠️ <a href="auth.html">Sign in</a> to earn XP for your sightings';
+    } else {
+      authNote.textContent = `Reporting as ${user.username} · +15 XP per sighting`;
+    }
+
+    // Populate bird select
+    const select = document.getElementById('bird-select');
+    BIRDS.forEach(b => {
+      const opt = document.createElement('option');
+      opt.value = b.id;
+      opt.textContent = `${b.commonName} (${b.status})`;
+      select.appendChild(opt);
+    });
+
+    // Set default date
+    const now = new Date();
+    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+    document.getElementById('sighting-date').value = now.toISOString().slice(0,16);
+
+    // Init sighting map
+    sightingMap = L.map('sighting-map', {
+      center: [12.0, 122.0],
+      zoom: 6,
+      zoomControl: true
+    });
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© OpenStreetMap contributors',
+      maxZoom: 18
+    }).addTo(sightingMap);
+
+    sightingMap.on('click', (e) => {
+      selectedLat = e.latlng.lat;
+      selectedLng = e.latlng.lng;
+      updateLocationMarker();
+    });
+
+    // Load recent sightings
+    loadRecentSightings();
+  });
+
+  function updateLocationMarker() {
+    if (locationMarker) sightingMap.removeLayer(locationMarker);
+    locationMarker = L.circleMarker([selectedLat, selectedLng], {
+      radius: 10,
+      fillColor: '#2E7D32',
+      color: 'white',
+      weight: 3,
+      fillOpacity: 0.8
+    }).addTo(sightingMap);
+    document.getElementById('coords-display').textContent = `📍 ${selectedLat.toFixed(5)}°N, ${selectedLng.toFixed(5)}°E`;
+  }
+
+  function useGPS() {
+    if (!navigator.geolocation) { showToast('GPS not supported', 'error'); return; }
+    navigator.geolocation.getCurrentPosition(
+      pos => {
+        selectedLat = pos.coords.latitude;
+        selectedLng = pos.coords.longitude;
+        sightingMap.setView([selectedLat, selectedLng], 13);
+        updateLocationMarker();
+        showToast('GPS location set!', 'success');
+      },
+      () => showToast('Could not get location', 'error')
+    );
+  }
+
+  function previewPhoto(e) {
+    const file = e.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      photoDataUrl = ev.target.result;
+      document.getElementById('photo-preview').src = ev.target.result;
+      document.getElementById('photo-preview-wrap').classList.add('visible');
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function submitSighting() {
+    const birdSelectVal = document.getElementById('bird-select').value;
+    const customBird = document.getElementById('custom-bird').value.trim();
+    const date = document.getElementById('sighting-date').value;
+    const count = document.getElementById('bird-count').value;
+    const notes = document.getElementById('notes').value.trim();
+    const habitat = document.getElementById('habitat-select').value;
+    const behavior = document.getElementById('behavior').value.trim();
+
+    let birdName = customBird;
+    let birdId = null;
+    if (birdSelectVal) {
+      const bird = BIRDS.find(b => b.id === parseInt(birdSelectVal));
+      birdName = bird ? bird.commonName : '';
+      birdId = parseInt(birdSelectVal);
+    }
+
+    if (!birdName) { showToast('Please select or enter a bird name', 'error'); return; }
+    if (!date) { showToast('Please set a date', 'error'); return; }
+    if (!selectedLat || !selectedLng) { showToast('Please select a location on the map', 'warning'); return; }
+
+    const sighting = {
+      birdName,
+      birdId,
+      date,
+      count: parseInt(count) || 1,
+      lat: selectedLat,
+      lng: selectedLng,
+      notes,
+      habitat,
+      behavior,
+      photo: photoDataUrl,
+      reporter: AUTH.getUser()?.username || 'Anonymous',
+      timestamp: Date.now()
+    };
+
+    const user = AUTH.getUser();
+    if (user) {
+      AUTH.addSighting(sighting);
+      const xpResult = AUTH.addXP(15, 'Sighting reported');
+      showToast(`📍 Sighting reported! +15 XP`, 'xp', 4000);
+      showXPGain(15, window.innerWidth/2, 200);
+      if (xpResult && xpResult.didLevelUp) setTimeout(() => showToast(`⭐ Level ${xpResult.newLevel}!`, 'success'), 800);
+    } else {
+      const global = JSON.parse(localStorage.getItem('dtmb_sightings') || '[]');
+      global.push({ ...sighting, id: Date.now() });
+      localStorage.setItem('dtmb_sightings', JSON.stringify(global));
+      showToast('Sighting reported anonymously!', 'success');
+    }
+
+    // Show success banner
+    const banner = document.getElementById('success-banner');
+    banner.style.display = '';
+    setTimeout(() => banner.style.display = 'none', 3000);
+
+    // Reset form
+    document.getElementById('bird-select').value = '';
+    document.getElementById('custom-bird').value = '';
+    document.getElementById('notes').value = '';
+    document.getElementById('behavior').value = '';
+    document.getElementById('bird-count').value = '1';
+    photoDataUrl = null;
+    document.getElementById('photo-preview-wrap').classList.remove('visible');
+
+    loadRecentSightings();
+  }
+
+  function loadRecentSightings() {
+    const allSightings = JSON.parse(localStorage.getItem('dtmb_sightings') || '[]');
+    const container = document.getElementById('sightings-list');
+    if (allSightings.length === 0) {
+      container.innerHTML = `
+        <div class="empty-state" style="padding:24px 0">
+          <div class="empty-state-icon" style="font-size:2rem">📍</div>
+          <div class="empty-state-title" style="font-size:0.95rem">No sightings yet</div>
+          <p style="font-size:0.8rem">Be the first to report a sighting!</p>
+        </div>
+      `;
+      return;
+    }
+    const recent = [...allSightings].reverse().slice(0, 8);
+    container.innerHTML = recent.map(s => {
+      const bird = BIRDS.find(b => b.id === s.birdId);
+      const imgSrc = s.photo || (bird ? bird.image : '');
+      const dateStr = s.date ? new Date(s.date).toLocaleDateString() : 'Unknown date';
+      return `
+        <div class="sighting-item">
+          ${imgSrc ? `<img src="${imgSrc}" class="sighting-thumb" onerror="this.style.display='none'" alt="${s.birdName}">` : '<div class="sighting-thumb" style="background:var(--bg-3);border-radius:8px"></div>'}
+          <div class="sighting-meta">
+            <div class="sighting-bird-name">${s.birdName}</div>
+            <div class="sighting-info">
+              📅 ${dateStr} · 👤 ${s.reporter || 'Anonymous'}
+              ${s.count > 1 ? ` · 🔢 ${s.count} birds` : ''}
+              ${s.habitat ? ` · 🌿 ${s.habitat}` : ''}
+            </div>
+            ${s.notes ? `<div style="font-size:0.75rem;color:var(--text-muted);margin-top:2px">${s.notes}</div>` : ''}
+          </div>
+          <div class="sighting-dot pulse"></div>
+        </div>
+      `;
+    }).join('');
+  }
+</script>
+</body>
+</html>

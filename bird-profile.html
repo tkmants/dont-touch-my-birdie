@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Bird Profile — Don't Touch My Birdie!</title>
+  <link rel="icon" href="logo.png" type="image/png">
+  <link rel="stylesheet" href="css/app.css">
+  <style>
+    .profile-back-bar {
+      background: #0d2e0e;
+      padding: 12px 0;
+    }
+    .profile-back-bar a {
+      color: rgba(255,255,255,0.7);
+      font-size: 0.85rem;
+      text-decoration: none;
+    }
+    .profile-back-bar a:hover { color: white; }
+    .profile-hero-section {
+      background: linear-gradient(180deg, #0d2e0e 0%, var(--bg) 100%);
+      padding: 40px 0 0;
+    }
+    .profile-layout {
+      display: grid;
+      grid-template-columns: 1fr 1.4fr;
+      gap: 40px;
+      align-items: start;
+    }
+    @media (max-width: 768px) {
+      .profile-layout { grid-template-columns: 1fr; }
+    }
+    .profile-main-image {
+      width: 100%;
+      aspect-ratio: 4/3;
+      object-fit: cover;
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-lg);
+      border: 2px solid rgba(255,255,255,0.15);
+    }
+    .profile-name-block { color: white; padding-bottom: 24px; }
+    .profile-name-block .bird-name { font-size: 2.2rem; font-weight: 800; color: white; margin-bottom: 6px; }
+    .profile-sci-name { font-size: 1rem; font-style: italic; color: rgba(255,255,255,0.65); margin-bottom: 12px; }
+    .profile-local-name { font-size: 0.9rem; color: rgba(255,255,255,0.55); margin-bottom: 20px; }
+    .profile-content { padding: 40px 0; }
+    .info-section {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      margin-bottom: 20px;
+    }
+    .info-section-title {
+      font-family: 'Bricolage Grotesque', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .fact-item {
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.875rem;
+    }
+    .fact-item:last-child { border-bottom: none; }
+    .fact-bullet {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: rgba(46,125,50,0.12);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.7rem;
+      flex-shrink: 0;
+      color: var(--forest);
+      font-weight: 700;
+    }
+    [data-theme="dark"] .fact-bullet { background: rgba(76,175,80,0.15); color: #66BB6A; }
+    .trend-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 12px;
+      border-radius: 100px;
+      font-size: 0.8rem;
+      font-weight: 700;
+    }
+    .trend-decreasing { background: rgba(239,83,80,0.12); color: #c62828; }
+    .trend-stable { background: rgba(255,167,38,0.12); color: #E65100; }
+    .trend-increasing { background: rgba(76,175,80,0.12); color: #2E7D32; }
+    [data-theme="dark"] .trend-increasing { background: rgba(76,175,80,0.18); color: #66BB6A; }
+    .related-birds-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+      gap: 16px;
+    }
+    .related-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      cursor: pointer;
+      transition: all var(--transition);
+      text-decoration: none;
+      display: block;
+      color: inherit;
+    }
+    .related-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-md); border-color: var(--forest); color: inherit; }
+    .related-card img { width: 100%; height: 120px; object-fit: cover; }
+    .related-card-body { padding: 10px; }
+    .related-card-name { font-weight: 700; font-size: 0.85rem; margin-bottom: 4px; }
+  </style>
+</head>
+<body>
+<div id="navbar-mount"></div>
+<div class="page-wrapper" id="page-content">
+  <div style="text-align:center;padding:100px 0"><div class="spinner"></div></div>
+</div>
+
+<script src="data/birds.js"></script>
+<script src="js/auth.js"></script>
+<script>
+  window.addEventListener('DOMContentLoaded', () => {
+    renderNavbar('birddex');
+    const params = new URLSearchParams(window.location.search);
+    const id = parseInt(params.get('id'));
+    const bird = BIRDS.find(b => b.id === id);
+
+    if (!bird) {
+      document.getElementById('page-content').innerHTML = `
+        <div class="container" style="padding:80px 0;text-align:center">
+          <div style="font-size:3rem;margin-bottom:16px">🦅</div>
+          <h2>Bird Not Found</h2>
+          <p style="color:var(--text-muted);margin-bottom:24px">This bird isn't in our BirdDex yet.</p>
+          <a href="birddex.html" class="btn btn-primary">← Back to BirdDex</a>
+        </div>
+      `;
+      return;
+    }
+
+    const user = AUTH.getUser();
+    const isDiscovered = user && (user.discoveredBirds || []).includes(bird.id);
+    const statusMap = { Common: 'badge-common', Rare: 'badge-rare', Endangered: 'badge-endangered', Extinct: 'badge-extinct' };
+    const dotMap = { Common: '🟢', Rare: '🟡', Endangered: '🔴', Extinct: '⚫' };
+    const trendClass = { Decreasing: 'trend-decreasing', Stable: 'trend-stable', Increasing: 'trend-increasing' };
+    const trendIcon = { Decreasing: '📉', Stable: '➡️', Increasing: '📈' };
+
+    document.title = `${bird.commonName} — Don't Touch My Birdie!`;
+
+    // Get same-habitat birds
+    const related = BIRDS.filter(b => b.id !== bird.id && b.habitat === bird.habitat).slice(0, 4);
+
+    document.getElementById('page-content').innerHTML = `
+      <!-- Back Bar -->
+      <div class="profile-back-bar">
+        <div class="container">
+          <a href="birddex.html">← Back to BirdDex</a>
+        </div>
+      </div>
+
+      <!-- Hero -->
+      <div class="profile-hero-section">
+        <div class="container">
+          <div class="profile-layout">
+            <div>
+              <img src="${bird.image}" alt="${bird.commonName}" class="profile-main-image"
+                   onerror="this.src='https://placehold.co/600x450/1B5E20/ffffff?text=${encodeURIComponent(bird.commonName)}'">
+            </div>
+            <div class="profile-name-block">
+              <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px">
+                <span class="badge ${statusMap[bird.status]}">${dotMap[bird.status]} ${bird.status}</span>
+                <span class="badge" style="background:rgba(255,255,255,0.1);color:rgba(255,255,255,0.8);border-color:rgba(255,255,255,0.2)">#${String(bird.id).padStart(3,'0')}</span>
+              </div>
+              <div class="bird-name" style="font-size:2.2rem;font-weight:800;color:white;margin-bottom:6px">${bird.commonName}</div>
+              <div class="profile-sci-name">${bird.scientificName}</div>
+              <div class="profile-local-name">Local name: ${bird.localName}</div>
+              <p style="color:rgba(255,255,255,0.65);font-size:0.9rem;line-height:1.7;margin-bottom:24px">${bird.description}</p>
+              <div style="display:flex;gap:24px;flex-wrap:wrap;margin-bottom:24px">
+                <div>
+                  <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.06em;color:rgba(255,255,255,0.45);margin-bottom:4px">Habitat</div>
+                  <div style="color:white;font-weight:600;font-size:0.9rem">🌿 ${bird.habitat}</div>
+                </div>
+                <div>
+                  <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.06em;color:rgba(255,255,255,0.45);margin-bottom:4px">Region</div>
+                  <div style="color:white;font-weight:600;font-size:0.9rem">📍 ${bird.region}</div>
+                </div>
+                <div>
+                  <div style="font-size:0.7rem;text-transform:uppercase;letter-spacing:0.06em;color:rgba(255,255,255,0.45);margin-bottom:4px">Population</div>
+                  <div>
+                    <span class="trend-indicator ${trendClass[bird.populationTrend] || 'trend-stable'}">
+                      ${trendIcon[bird.populationTrend] || '➡️'} ${bird.populationTrend}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div style="display:flex;gap:10px;flex-wrap:wrap">
+                ${user ? `
+                  <button class="btn ${isDiscovered ? 'btn-secondary' : 'btn-gold'}" onclick="collectBird(${bird.id})">
+                    ${isDiscovered ? '✓ In My BirdDex' : '+ Add to BirdDex'}
+                  </button>
+                ` : `
+                  <a href="auth.html" class="btn btn-gold">Sign in to collect</a>
+                `}
+                <a href="map.html?bird=${bird.id}" class="btn" style="background:rgba(255,255,255,0.1);color:white;border:1px solid rgba(255,255,255,0.2)">📍 View on Map</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Content -->
+      <div class="profile-content">
+        <div class="container">
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px" class="profile-detail-grid">
+            <!-- Fun Facts -->
+            <div class="info-section">
+              <div class="info-section-title">✨ Fun Facts</div>
+              ${bird.funFacts.map((f, i) => `
+                <div class="fact-item">
+                  <div class="fact-bullet">${i+1}</div>
+                  <span>${f}</span>
+                </div>
+              `).join('')}
+            </div>
+
+            <!-- Threats & Conservation -->
+            <div>
+              <div class="info-section">
+                <div class="info-section-title">⚠️ Threats</div>
+                ${bird.threats.map(t => `
+                  <div class="fact-item">
+                    <div class="fact-bullet">!</div>
+                    <span>${t}</span>
+                  </div>
+                `).join('')}
+              </div>
+              <div class="info-section" style="background:rgba(46,125,50,0.04);border-color:rgba(46,125,50,0.2)">
+                <div class="info-section-title">🌿 Conservation Efforts</div>
+                <p style="font-size:0.875rem;color:var(--text-muted);line-height:1.7">${bird.conservation}</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Map preview -->
+          <div class="info-section" style="margin-top:20px">
+            <div class="info-section-title">📍 Habitat Location</div>
+            <p style="font-size:0.875rem;color:var(--text-muted);margin-bottom:12px">
+              Primary range: <strong>${bird.region}</strong> · Coordinates: ${bird.coordinates[0].toFixed(2)}°N, ${bird.coordinates[1].toFixed(2)}°E
+            </p>
+            <a href="map.html?bird=${bird.id}" class="btn btn-sm btn-primary">🗺️ View on Interactive Map →</a>
+          </div>
+
+          <!-- Related Birds -->
+          ${related.length ? `
+            <div style="margin-top:40px">
+              <div style="font-family:'Bricolage Grotesque',sans-serif;font-size:1.2rem;font-weight:700;margin-bottom:20px">
+                🦜 More ${bird.habitat} Birds
+              </div>
+              <div class="related-birds-grid">
+                ${related.map(r => `
+                  <a href="bird-profile.html?id=${r.id}" class="related-card">
+                    <img src="${r.image}" alt="${r.commonName}" onerror="this.src='https://placehold.co/160x120/1B5E20/ffffff?text=Bird'">
+                    <div class="related-card-body">
+                      <div class="related-card-name bird-name">${r.commonName}</div>
+                      <span class="badge ${statusMap[r.status]}" style="font-size:0.65rem">${r.status}</span>
+                    </div>
+                  </a>
+                `).join('')}
+              </div>
+            </div>
+          ` : ''}
+        </div>
+      </div>
+
+      <footer class="footer">
+        <div class="container">
+          <div class="footer-bottom">
+            <span>© 2025 Don't Touch My Birdie!</span>
+            <a href="birddex.html" style="color:var(--text-muted)">← Back to BirdDex</a>
+          </div>
+        </div>
+      </footer>
+    `;
+
+    // Add responsive style for profile detail grid
+    if (window.innerWidth <= 768) {
+      document.querySelector('.profile-detail-grid').style.gridTemplateColumns = '1fr';
+    }
+  });
+
+  function collectBird(id) {
+    const user = AUTH.getUser();
+    if (!user) { window.location.href = 'auth.html'; return; }
+    const result = AUTH.discoverBird(id);
+    if (result && !result.alreadyDiscovered) {
+      const xpResult = AUTH.addXP(25);
+      const bird = BIRDS.find(b => b.id === id);
+      showToast(`🐦 ${bird.commonName} added to your BirdDex! +25 XP`, 'xp', 4000);
+      showXPGain(25, window.innerWidth/2, window.innerHeight/2);
+      if (xpResult && xpResult.didLevelUp) {
+        setTimeout(() => showToast(`⭐ Level Up! Level ${xpResult.newLevel}!`, 'success', 5000), 800);
+      }
+      const achievements = AUTH.checkAchievements();
+      achievements.forEach((a, i) => {
+        setTimeout(() => showToast(`🏅 Achievement: ${a.name}! +${a.xp} XP`, 'success', 5000), 1500 + i * 800);
+      });
+      // Update button
+      const btn = document.querySelector(`button[onclick="collectBird(${id})"]`);
+      if (btn) {
+        btn.textContent = '✓ In My BirdDex';
+        btn.className = 'btn btn-secondary';
+      }
+    } else {
+      showToast('Already in your BirdDex!', 'warning');
+    }
+  }
+</script>
+</body>
+</html>

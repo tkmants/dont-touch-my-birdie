@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sign In — Don't Touch My Birdie!</title>
+  <link rel="icon" href="logo.png" type="image/png">
+  <link rel="stylesheet" href="css/app.css">
+  <style>
+    body { background: var(--bg-2); }
+    .auth-tabs {
+      display: flex;
+      gap: 0;
+      background: var(--bg-3);
+      border-radius: var(--radius-md);
+      padding: 4px;
+      margin-bottom: 24px;
+    }
+    .auth-tab {
+      flex: 1;
+      padding: 8px 12px;
+      border: none;
+      background: transparent;
+      border-radius: var(--radius-sm);
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--text-muted);
+      cursor: pointer;
+      transition: all var(--transition);
+    }
+    .auth-tab.active {
+      background: var(--card-bg);
+      color: var(--text);
+      box-shadow: var(--shadow-sm);
+    }
+    .demo-box {
+      background: rgba(46,125,50,0.06);
+      border: 1px solid rgba(46,125,50,0.2);
+      border-radius: var(--radius-md);
+      padding: 12px;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      margin-bottom: 16px;
+    }
+    [data-theme="dark"] .demo-box {
+      background: rgba(76,175,80,0.06);
+      border-color: rgba(76,175,80,0.2);
+    }
+    .benefit-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    .benefit-list li {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 0.875rem;
+      color: var(--text-muted);
+    }
+    .benefit-list li span:first-child {
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+    .password-wrap { position: relative; }
+    .password-toggle {
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: none;
+      border: none;
+      cursor: pointer;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+    .strength-bar-track {
+      height: 4px;
+      background: var(--border);
+      border-radius: 2px;
+      margin-top: 6px;
+      overflow: hidden;
+    }
+    .strength-bar-fill {
+      height: 100%;
+      border-radius: 2px;
+      transition: width 0.3s, background 0.3s;
+    }
+  </style>
+</head>
+<body>
+<div id="navbar-mount"></div>
+
+<div class="auth-page">
+  <div style="width:100%;max-width:420px">
+    <div class="auth-card">
+      <div class="auth-logo-wrap">
+        <img src="logo.png" alt="Logo" class="auth-logo">
+        <h1 class="auth-title" style="font-size:1.4rem">Don't Touch My Birdie!</h1>
+        <p class="auth-subtitle" id="auth-subtitle">Sign in to your explorer account</p>
+      </div>
+
+      <!-- Tabs -->
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="tab-login" onclick="switchTab('login')">Sign In</button>
+        <button class="auth-tab" id="tab-register" onclick="switchTab('register')">Create Account</button>
+      </div>
+
+      <!-- Login Form -->
+      <div id="login-form">
+        <div class="demo-box">
+          🔑 <strong>Demo:</strong> Register a new account or use any previously registered email/password.
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email Address</label>
+          <input type="email" class="form-control" id="login-email" placeholder="you@example.com" autocomplete="email">
+          <div class="form-error" id="login-email-error"></div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password</label>
+          <div class="password-wrap">
+            <input type="password" class="form-control" id="login-password" placeholder="Your password" autocomplete="current-password">
+            <button class="password-toggle" onclick="togglePassword('login-password', this)" type="button">👁️</button>
+          </div>
+          <div class="form-error" id="login-password-error"></div>
+        </div>
+        <div class="form-error" id="login-general-error" style="margin-bottom:12px"></div>
+        <button class="btn btn-primary" style="width:100%;margin-bottom:12px" onclick="handleLogin()">
+          Sign In →
+        </button>
+        <p style="text-align:center;font-size:0.8rem;color:var(--text-muted)">
+          New here? <a href="#" onclick="switchTab('register');return false">Create a free account</a>
+        </p>
+      </div>
+
+      <!-- Register Form -->
+      <div id="register-form" style="display:none">
+        <div class="form-group">
+          <label class="form-label">Explorer Name *</label>
+          <input type="text" class="form-control" id="reg-username" placeholder="Choose your explorer name" autocomplete="username">
+          <div class="form-error" id="reg-username-error"></div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email Address *</label>
+          <input type="email" class="form-control" id="reg-email" placeholder="you@example.com" autocomplete="email">
+          <div class="form-error" id="reg-email-error"></div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Password *</label>
+          <div class="password-wrap">
+            <input type="password" class="form-control" id="reg-password" placeholder="Min 6 characters" autocomplete="new-password" oninput="checkStrength(this.value)">
+            <button class="password-toggle" onclick="togglePassword('reg-password', this)" type="button">👁️</button>
+          </div>
+          <div class="strength-bar-track">
+            <div class="strength-bar-fill" id="strength-bar" style="width:0%;background:#F44336"></div>
+          </div>
+          <div id="strength-label" style="font-size:0.72rem;color:var(--text-muted);margin-top:3px"></div>
+          <div class="form-error" id="reg-password-error"></div>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Confirm Password *</label>
+          <div class="password-wrap">
+            <input type="password" class="form-control" id="reg-confirm" placeholder="Repeat your password" autocomplete="new-password">
+            <button class="password-toggle" onclick="togglePassword('reg-confirm', this)" type="button">👁️</button>
+          </div>
+          <div class="form-error" id="reg-confirm-error"></div>
+        </div>
+        <div class="form-error" id="reg-general-error" style="margin-bottom:12px"></div>
+        <button class="btn btn-primary" style="width:100%;margin-bottom:16px" onclick="handleRegister()">
+          🦅 Create Explorer Account
+        </button>
+        <ul class="benefit-list">
+          <li><span>⭐</span><span>Earn XP and level up as you discover birds</span></li>
+          <li><span>📖</span><span>Build your personal BirdDex collection</span></li>
+          <li><span>🏅</span><span>Unlock achievement badges</span></li>
+          <li><span>📍</span><span>Submit sightings and contribute to conservation</span></li>
+        </ul>
+        <p style="text-align:center;font-size:0.8rem;color:var(--text-muted)">
+          Already exploring? <a href="#" onclick="switchTab('login');return false">Sign in</a>
+        </p>
+      </div>
+    </div>
+
+    <!-- Skip link -->
+    <div style="text-align:center;margin-top:16px">
+      <a href="index.html" style="font-size:0.82rem;color:var(--text-muted)">← Explore without an account</a>
+    </div>
+  </div>
+</div>
+
+<script src="data/birds.js"></script>
+<script src="js/auth.js"></script>
+<script>
+  window.addEventListener('DOMContentLoaded', () => {
+    renderNavbar('');
+
+    // Check if already logged in
+    if (AUTH.isLoggedIn()) {
+      const redirect = new URLSearchParams(window.location.search).get('redirect') || 'index.html';
+      window.location.href = redirect;
+      return;
+    }
+
+    // Check mode param
+    const mode = new URLSearchParams(window.location.search).get('mode');
+    if (mode === 'register') switchTab('register');
+  });
+
+  function switchTab(tab) {
+    document.getElementById('login-form').style.display = tab === 'login' ? '' : 'none';
+    document.getElementById('register-form').style.display = tab === 'register' ? '' : 'none';
+    document.getElementById('tab-login').classList.toggle('active', tab === 'login');
+    document.getElementById('tab-register').classList.toggle('active', tab === 'register');
+    document.getElementById('auth-subtitle').textContent = tab === 'login' 
+      ? 'Sign in to your explorer account' 
+      : 'Join the bird conservation community';
+  }
+
+  function clearErrors() {
+    document.querySelectorAll('.form-error').forEach(el => el.textContent = '');
+  }
+
+  function handleLogin() {
+    clearErrors();
+    const email = document.getElementById('login-email').value.trim();
+    const password = document.getElementById('login-password').value;
+    let valid = true;
+
+    if (!email) { document.getElementById('login-email-error').textContent = 'Email is required'; valid = false; }
+    if (!password) { document.getElementById('login-password-error').textContent = 'Password is required'; valid = false; }
+    if (!valid) return;
+
+    const result = AUTH.login(email, password);
+    if (result.success) {
+      showToast(`Welcome back, ${result.user.username}! 🦅`, 'success');
+      setTimeout(() => {
+        const redirect = new URLSearchParams(window.location.search).get('redirect') || 'index.html';
+        window.location.href = redirect;
+      }, 800);
+    } else {
+      document.getElementById('login-general-error').textContent = result.error;
+    }
+  }
+
+  function handleRegister() {
+    clearErrors();
+    const username = document.getElementById('reg-username').value.trim();
+    const email = document.getElementById('reg-email').value.trim();
+    const password = document.getElementById('reg-password').value;
+    const confirm = document.getElementById('reg-confirm').value;
+    let valid = true;
+
+    if (!username) { document.getElementById('reg-username-error').textContent = 'Username is required'; valid = false; }
+    if (!email) { document.getElementById('reg-email-error').textContent = 'Email is required'; valid = false; }
+    if (!password) { document.getElementById('reg-password-error').textContent = 'Password is required'; valid = false; }
+    if (password && confirm && password !== confirm) {
+      document.getElementById('reg-confirm-error').textContent = 'Passwords do not match';
+      valid = false;
+    }
+    if (!valid) return;
+
+    const result = AUTH.register(username, email, password);
+    if (result.success) {
+      showToast(`Welcome, ${username}! Your adventure begins! 🦅`, 'success', 4000);
+      // Give welcome XP
+      AUTH.addXP(50, 'Welcome bonus');
+      setTimeout(() => {
+        window.location.href = 'birddex.html';
+      }, 1200);
+    } else {
+      document.getElementById('reg-general-error').textContent = result.error;
+    }
+  }
+
+  function togglePassword(inputId, btn) {
+    const input = document.getElementById(inputId);
+    const isText = input.type === 'text';
+    input.type = isText ? 'password' : 'text';
+    btn.textContent = isText ? '👁️' : '🙈';
+  }
+
+  function checkStrength(password) {
+    const bar = document.getElementById('strength-bar');
+    const label = document.getElementById('strength-label');
+    if (!password) { bar.style.width = '0%'; label.textContent = ''; return; }
+    let score = 0;
+    if (password.length >= 6) score++;
+    if (password.length >= 10) score++;
+    if (/[A-Z]/.test(password)) score++;
+    if (/[0-9]/.test(password)) score++;
+    if (/[^a-zA-Z0-9]/.test(password)) score++;
+
+    const levels = ['', 'Weak', 'Fair', 'Good', 'Strong', 'Excellent'];
+    const colors = ['', '#F44336', '#FF9800', '#FFC107', '#4CAF50', '#2E7D32'];
+    const pcts = [0, 20, 40, 60, 80, 100];
+    bar.style.width = pcts[score] + '%';
+    bar.style.background = colors[score];
+    label.textContent = levels[score];
+  }
+
+  // Allow Enter key to submit
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Enter') {
+      const loginVisible = document.getElementById('login-form').style.display !== 'none';
+      if (loginVisible) handleLogin();
+      else handleRegister();
+    }
+  });
+</script>
+</body>
+</html>

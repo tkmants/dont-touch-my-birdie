@@ -1,0 +1,420 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Achievements — Don't Touch My Birdie!</title>
+  <link rel="icon" href="logo.png" type="image/png">
+  <link rel="stylesheet" href="css/app.css">
+  <style>
+    .achievements-hero {
+      background: linear-gradient(135deg, #1a237e 0%, #1565C0 40%, #1B5E20 100%);
+      padding: 48px 0 32px;
+    }
+    .achievements-hero h1 { color: white; margin-bottom: 8px; }
+    .achievements-hero p { color: rgba(255,255,255,0.7); }
+    .profile-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      padding: 32px;
+      display: flex;
+      gap: 24px;
+      align-items: flex-start;
+      flex-wrap: wrap;
+      margin-bottom: 32px;
+    }
+    .big-avatar {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--forest), var(--sky));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2.5rem;
+      flex-shrink: 0;
+      box-shadow: var(--shadow-md);
+    }
+    .profile-meta { flex: 1; min-width: 200px; }
+    .profile-username {
+      font-family: 'Bricolage Grotesque', sans-serif;
+      font-size: 1.6rem;
+      font-weight: 800;
+      margin-bottom: 4px;
+    }
+    .profile-stats-row {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      margin-top: 16px;
+    }
+    .profile-stat {
+      text-align: center;
+    }
+    .profile-stat-val {
+      font-family: 'Bricolage Grotesque', sans-serif;
+      font-size: 1.4rem;
+      font-weight: 800;
+      color: var(--forest);
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+    [data-theme="dark"] .profile-stat-val { color: #66BB6A; }
+    .profile-stat-lbl { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; }
+    .level-ring {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      background: conic-gradient(var(--forest) calc(var(--pct,0) * 1%), var(--bg-3) 0);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      position: relative;
+    }
+    .level-ring::before {
+      content: '';
+      position: absolute;
+      inset: 10px;
+      border-radius: 50%;
+      background: var(--card-bg);
+    }
+    .level-ring-inner {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+    }
+    .level-ring-num {
+      font-family: 'Bricolage Grotesque', sans-serif;
+      font-size: 1.6rem;
+      font-weight: 800;
+      color: var(--forest);
+      line-height: 1;
+    }
+    [data-theme="dark"] .level-ring-num { color: #66BB6A; }
+    .level-ring-label { font-size: 0.6rem; color: var(--text-muted); text-transform: uppercase; }
+    .achievement-card-unlocked {
+      border-color: rgba(46,125,50,0.3);
+      background: rgba(46,125,50,0.04);
+    }
+    [data-theme="dark"] .achievement-card-unlocked {
+      border-color: rgba(76,175,80,0.3);
+      background: rgba(76,175,80,0.06);
+    }
+    .achievement-icon-unlocked {
+      background: linear-gradient(135deg, var(--forest), #66BB6A) !important;
+    }
+    .badge-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 32px;
+    }
+    .earned-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      background: linear-gradient(135deg, rgba(46,125,50,0.1), rgba(79,195,247,0.1));
+      border: 1px solid rgba(46,125,50,0.3);
+      border-radius: 100px;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--forest);
+    }
+    [data-theme="dark"] .earned-badge {
+      background: rgba(76,175,80,0.1);
+      border-color: rgba(76,175,80,0.3);
+      color: #66BB6A;
+    }
+    .leaderboard-item {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+    }
+    .leaderboard-item:last-child { border-bottom: none; }
+    .leaderboard-rank {
+      font-family: 'Bricolage Grotesque', sans-serif;
+      font-size: 1rem;
+      font-weight: 800;
+      color: var(--text-muted);
+      width: 24px;
+      text-align: center;
+    }
+    .leaderboard-rank.top3 { color: var(--gold-dark); }
+    .leaderboard-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--forest), var(--sky));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1rem;
+      flex-shrink: 0;
+    }
+    .leaderboard-name { flex: 1; font-weight: 600; font-size: 0.9rem; }
+    .leaderboard-xp {
+      font-family: 'Bricolage Grotesque', sans-serif;
+      font-weight: 700;
+      color: var(--forest);
+      font-size: 0.9rem;
+    }
+    [data-theme="dark"] .leaderboard-xp { color: #66BB6A; }
+    .xp-event-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 8px 0;
+      border-bottom: 1px solid var(--border);
+      font-size: 0.85rem;
+    }
+    .xp-event-row:last-child { border-bottom: none; }
+    .login-prompt {
+      text-align: center;
+      padding: 80px 20px;
+    }
+    .login-prompt-icon { font-size: 4rem; margin-bottom: 16px; }
+    .login-prompt h2 { margin-bottom: 10px; }
+    .login-prompt p { color: var(--text-muted); margin-bottom: 24px; }
+  </style>
+</head>
+<body>
+<div id="navbar-mount"></div>
+<div class="page-wrapper">
+
+  <div class="achievements-hero">
+    <div class="container">
+      <div class="section-eyebrow" style="color:rgba(255,255,255,0.6);margin-bottom:10px">🏆 Gamification</div>
+      <h1>Achievements & Progress</h1>
+      <p>Track your explorer journey, earn badges, and level up as you discover Philippine birds.</p>
+    </div>
+  </div>
+
+  <section class="section" id="main-section">
+    <div class="container" id="content-area">
+      <div style="text-align:center;padding:60px 0"><div class="spinner"></div></div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-bottom">
+        <span>© 2025 Don't Touch My Birdie!</span>
+        <a href="index.html" style="color:var(--text-muted)">← Back to Home</a>
+      </div>
+    </div>
+  </footer>
+</div>
+
+<script src="data/birds.js"></script>
+<script src="js/auth.js"></script>
+<script>
+  const ACHIEVEMENTS = [
+    { id: 'first_bird', name: 'First Sighting', icon: '🐦', desc: 'Discover your very first bird in the BirdDex.', threshold: 1, type: 'discovered', xp: 50, hint: 'Discover 1 bird' },
+    { id: 'bird_watcher', name: 'Bird Watcher', icon: '🔭', desc: 'Discover 5 different bird species.', threshold: 5, type: 'discovered', xp: 100, hint: 'Discover 5 birds' },
+    { id: 'fledgling', name: 'Fledgling Explorer', icon: '🌿', desc: 'Discover 10 bird species.', threshold: 10, type: 'discovered', xp: 150, hint: 'Discover 10 birds' },
+    { id: 'eagle_expert', name: 'Eagle Expert', icon: '🦅', desc: 'Discover 20 bird species.', threshold: 20, type: 'discovered', xp: 250, hint: 'Discover 20 birds' },
+    { id: 'conservation_hero', name: 'Conservation Hero', icon: '🌍', desc: 'Discover 30 bird species and become a conservation champion.', threshold: 30, type: 'discovered', xp: 400, hint: 'Discover 30 birds' },
+    { id: 'wetland_explorer', name: 'Wetland Explorer', icon: '🌊', desc: 'Discover 3 wetland bird species.', threshold: 3, type: 'wetland', xp: 100, hint: 'Discover 3 wetland birds' },
+    { id: 'forest_guardian', name: 'Forest Guardian', icon: '🌲', desc: 'Discover 5 forest bird species.', threshold: 5, type: 'forest', xp: 120, hint: 'Discover 5 forest birds' },
+    { id: 'coastal_explorer', name: 'Coastal Explorer', icon: '🏖️', desc: 'Discover 3 coastal bird species.', threshold: 3, type: 'coastal', xp: 100, hint: 'Discover 3 coastal birds' },
+    { id: 'ai_identifier', name: 'Tech Explorer', icon: '🤖', desc: 'Use the AI identifier to find a bird.', threshold: 1, type: 'ai', xp: 75, hint: 'Use AI identification once' },
+    { id: 'reporter', name: 'Field Reporter', icon: '📍', desc: 'Submit your first bird sighting report.', threshold: 1, type: 'sightings', xp: 75, hint: 'Report 1 sighting' },
+    { id: 'prolific_reporter', name: 'Prolific Reporter', icon: '🗺️', desc: 'Submit 5 bird sighting reports.', threshold: 5, type: 'sightings', xp: 200, hint: 'Report 5 sightings' },
+    { id: 'streak_3', name: 'Consistent Explorer', icon: '🔥', desc: 'Log in 3 days in a row.', threshold: 3, type: 'streak', xp: 100, hint: '3-day login streak' },
+    { id: 'streak_7', name: 'Dedicated Birder', icon: '⚡', desc: 'Log in 7 days in a row.', threshold: 7, type: 'streak', xp: 250, hint: '7-day login streak' },
+    { id: 'palawan', name: 'Palawan Discoverer', icon: '🦋', desc: 'Discover birds from the Palawan region.', threshold: 3, type: 'region_palawan', xp: 150, hint: 'Discover 3 Palawan birds' },
+    { id: 'endangered_aware', name: 'Endangered Aware', icon: '🔴', desc: 'Discover 5 endangered bird species.', threshold: 5, type: 'endangered', xp: 200, hint: 'Discover 5 endangered birds' },
+    { id: 'collector', name: 'Master Collector', icon: '📚', desc: 'Discover every bird in the BirdDex!', threshold: BIRDS ? BIRDS.length : 40, type: 'discovered', xp: 1000, hint: `Discover all ${BIRDS ? BIRDS.length : 40} birds` }
+  ];
+
+  window.addEventListener('DOMContentLoaded', () => {
+    renderNavbar('achievements');
+    renderContent();
+  });
+
+  function getProgress(user, achievement) {
+    const discovered = user.discoveredBirds || [];
+    const discoveredBirds = BIRDS.filter(b => discovered.includes(b.id));
+    switch (achievement.type) {
+      case 'discovered': return discovered.length;
+      case 'wetland': return discoveredBirds.filter(b => b.habitat === 'Wetland').length;
+      case 'forest': return discoveredBirds.filter(b => b.habitat === 'Forest').length;
+      case 'coastal': return discoveredBirds.filter(b => b.habitat === 'Coastal').length;
+      case 'endangered': return discoveredBirds.filter(b => b.status === 'Endangered').length;
+      case 'region_palawan': return discoveredBirds.filter(b => b.region === 'Palawan').length;
+      case 'sightings': return (user.sightings || []).length;
+      case 'streak': return user.streak || 0;
+      case 'ai': return (user.achievements || []).includes('ai_identifier') ? 1 : 0;
+      default: return 0;
+    }
+  }
+
+  function renderContent() {
+    const user = AUTH.getUser();
+    const container = document.getElementById('content-area');
+
+    if (!user) {
+      container.innerHTML = `
+        <div class="login-prompt">
+          <div class="login-prompt-icon">🏆</div>
+          <h2>Sign in to Track Achievements</h2>
+          <p>Create an account to earn XP, unlock badges, and track your explorer progress.</p>
+          <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+            <a href="auth.html" class="btn btn-primary btn-lg">🦅 Create Account</a>
+            <a href="auth.html?mode=login" class="btn btn-secondary btn-lg">Sign In</a>
+          </div>
+          <div style="margin-top:48px">
+            <div style="font-family:'Bricolage Grotesque',sans-serif;font-size:1.2rem;font-weight:700;margin-bottom:20px">Available Achievements</div>
+            <div class="achievement-grid">
+              ${ACHIEVEMENTS.map(a => `
+                <div class="achievement-card locked">
+                  <div class="achievement-icon" style="background:var(--bg-3)">${a.icon}</div>
+                  <div class="achievement-body">
+                    <div class="achievement-title">${a.name}</div>
+                    <div class="achievement-desc">${a.hint}</div>
+                    <div style="font-size:0.72rem;color:var(--sky-dark);margin-top:4px">+${a.xp} XP</div>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+        </div>
+      `;
+      return;
+    }
+
+    const xpProg = AUTH.getXPProgress();
+    const earnedIds = user.achievements || [];
+    const discovered = (user.discoveredBirds || []).length;
+    const sightings = (user.sightings || []).length;
+
+    container.innerHTML = `
+      <!-- Profile Card -->
+      <div class="profile-card">
+        <div class="big-avatar">🦅</div>
+        <div class="profile-meta">
+          <div class="profile-username">${user.username}</div>
+          <div style="color:var(--text-muted);font-size:0.85rem;margin-bottom:12px">${user.email}</div>
+          <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px">
+            ${earnedIds.slice(-3).map(id => {
+              const a = ACHIEVEMENTS.find(x => x.id === id);
+              return a ? `<span class="earned-badge">${a.icon} ${a.name}</span>` : '';
+            }).join('')}
+            ${earnedIds.length === 0 ? '<span style="font-size:0.8rem;color:var(--text-muted)">No badges yet — start exploring!</span>' : ''}
+          </div>
+          <div class="profile-stats-row">
+            <div class="profile-stat">
+              <div class="profile-stat-val">${discovered}</div>
+              <div class="profile-stat-lbl">Birds Found</div>
+            </div>
+            <div class="profile-stat">
+              <div class="profile-stat-val">${user.xp || 0}</div>
+              <div class="profile-stat-lbl">Total XP</div>
+            </div>
+            <div class="profile-stat">
+              <div class="profile-stat-val">${sightings}</div>
+              <div class="profile-stat-lbl">Sightings</div>
+            </div>
+            <div class="profile-stat">
+              <div class="profile-stat-val">${user.streak || 0}</div>
+              <div class="profile-stat-lbl">Day Streak</div>
+            </div>
+            <div class="profile-stat">
+              <div class="profile-stat-val">${earnedIds.length}</div>
+              <div class="profile-stat-lbl">Badges Earned</div>
+            </div>
+          </div>
+        </div>
+        <div class="level-ring" style="--pct:${xpProg.percent}">
+          <div class="level-ring-inner">
+            <div class="level-ring-num">${user.level || 1}</div>
+            <div class="level-ring-label">Level</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- XP Bar -->
+      <div class="card" style="padding:20px;margin-bottom:32px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">
+          <div style="font-family:'Bricolage Grotesque',sans-serif;font-weight:700">
+            ⭐ Level ${user.level || 1} Explorer
+          </div>
+          <div style="font-size:0.8rem;color:var(--text-muted)">
+            ${xpProg.current} / ${xpProg.needed} XP → Level ${(user.level||1)+1}
+          </div>
+        </div>
+        <div class="xp-bar-track" style="height:12px">
+          <div class="xp-bar-fill" style="width:${xpProg.percent}%"></div>
+        </div>
+        <div style="margin-top:8px;font-size:0.78rem;color:var(--text-muted)">
+          ${xpProg.percent}% complete · Total XP: ${user.xp || 0}
+        </div>
+      </div>
+
+      <!-- Achievements Grid -->
+      <div class="section-header">
+        <div class="section-title-wrap">
+          <span class="section-eyebrow">🏅 Achievement Badges</span>
+          <h2>Your Collection</h2>
+        </div>
+        <div style="font-size:0.875rem;color:var(--text-muted)">${earnedIds.length} / ${ACHIEVEMENTS.length} unlocked</div>
+      </div>
+      <div class="achievement-grid" style="margin-bottom:48px">
+        ${ACHIEVEMENTS.map(a => {
+          const isUnlocked = earnedIds.includes(a.id);
+          const prog = getProgress(user, a);
+          const pct = Math.min(100, Math.round((prog / a.threshold) * 100));
+          return `
+            <div class="achievement-card ${isUnlocked ? 'achievement-card-unlocked' : 'locked'}">
+              <div class="achievement-icon ${isUnlocked ? 'achievement-icon-unlocked' : ''}">${a.icon}</div>
+              <div class="achievement-body">
+                <div class="achievement-title achievement-title">${a.name}</div>
+                <div class="achievement-desc">${a.desc}</div>
+                <div style="font-size:0.72rem;color:var(--sky-dark);margin-bottom:6px">+${a.xp} XP</div>
+                ${isUnlocked ? `
+                  <span class="badge badge-common">✓ Unlocked</span>
+                ` : `
+                  <div class="achievement-progress-label">${prog} / ${a.threshold}</div>
+                  <div class="xp-bar-track"><div class="xp-bar-fill" style="width:${pct}%"></div></div>
+                `}
+              </div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+
+      <!-- XP Way to Earn -->
+      <div class="section-header">
+        <div class="section-title-wrap">
+          <span class="section-eyebrow">⭐ How to Earn XP</span>
+          <h2>Explorer Activities</h2>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px;margin-bottom:48px">
+        ${[
+          ['🐦', 'Discover a bird', '+25 XP'],
+          ['🔍', 'AI identification', '+35 XP'],
+          ['📍', 'Report a sighting', '+15 XP'],
+          ['🏅', 'Unlock achievement', '+50–1000 XP'],
+          ['🔥', 'Daily login streak', 'Streak bonus'],
+          ['🌿', 'Habitat completion', 'Region bonus']
+        ].map(([icon, label, xp]) => `
+          <div style="background:var(--card-bg);border:1px solid var(--border);border-radius:var(--radius-md);padding:16px;display:flex;align-items:center;gap:12px">
+            <span style="font-size:1.5rem">${icon}</span>
+            <div>
+              <div style="font-weight:700;font-size:0.875rem">${label}</div>
+              <div style="color:var(--forest);font-size:0.8rem;font-weight:700">${xp}</div>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    `;
+  }
+</script>
+</body>
+</html>

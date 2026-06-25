@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Our Mission — Don't Touch My Birdie!</title>
+  <link rel="icon" href="logo.png" type="image/png">
+  <link rel="stylesheet" href="css/app.css">
+  <style>
+    .mission-hero {
+      background: linear-gradient(135deg, #1a237e 0%, #1B5E20 50%, #004D40 100%);
+      padding: 80px 0 60px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .mission-hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at center, rgba(79,195,247,0.1) 0%, transparent 70%);
+    }
+    .mission-hero-content { position: relative; z-index: 1; }
+    .mission-hero h1 { color: white; margin-bottom: 20px; max-width: 800px; margin-left: auto; margin-right: auto; }
+    .mission-statement {
+      font-size: 1.15rem;
+      color: rgba(255,255,255,0.8);
+      max-width: 720px;
+      margin: 0 auto 32px;
+      line-height: 1.8;
+    }
+    .mission-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      padding: 32px;
+      margin-bottom: 24px;
+    }
+    .mission-icon { font-size: 2.5rem; margin-bottom: 16px; }
+    .pillar-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 20px;
+    }
+    .pillar-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      transition: all var(--transition);
+    }
+    .pillar-card:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+    .pillar-icon { font-size: 2rem; margin-bottom: 12px; }
+    .pillar-title { font-family: 'Bricolage Grotesque', sans-serif; font-size: 1rem; font-weight: 700; margin-bottom: 8px; }
+    .partner-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 24px;
+      display: flex;
+      gap: 20px;
+      align-items: flex-start;
+      transition: all var(--transition);
+    }
+    .partner-card:hover { box-shadow: var(--shadow-md); border-color: var(--forest); }
+    .partner-logo-circle {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8rem;
+      flex-shrink: 0;
+      background: rgba(46,125,50,0.1);
+    }
+    .partner-name { font-family: 'Bricolage Grotesque', sans-serif; font-size: 1rem; font-weight: 700; margin-bottom: 6px; }
+    .partner-desc { font-size: 0.875rem; color: var(--text-muted); line-height: 1.6; }
+    .timeline-item {
+      display: flex;
+      gap: 20px;
+      padding-bottom: 32px;
+      position: relative;
+    }
+    .timeline-item::before {
+      content: '';
+      position: absolute;
+      left: 18px;
+      top: 36px;
+      width: 2px;
+      height: calc(100% - 8px);
+      background: var(--border);
+    }
+    .timeline-item:last-child::before { display: none; }
+    .timeline-dot {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: var(--forest);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.9rem;
+      flex-shrink: 0;
+      color: white;
+      z-index: 1;
+    }
+    .timeline-content { flex: 1; padding-top: 4px; }
+    .timeline-title { font-family: 'Bricolage Grotesque', sans-serif; font-weight: 700; margin-bottom: 4px; }
+    .beneficiary-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 12px;
+    }
+    .beneficiary-chip {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 16px;
+      text-align: center;
+      transition: all var(--transition);
+    }
+    .beneficiary-chip:hover { border-color: var(--forest); box-shadow: var(--shadow-sm); }
+    .beneficiary-icon { font-size: 2rem; margin-bottom: 8px; }
+    .beneficiary-name { font-weight: 700; font-size: 0.85rem; margin-bottom: 4px; }
+    .beneficiary-role { font-size: 0.75rem; color: var(--text-muted); }
+    .stats-banner {
+      background: linear-gradient(135deg, var(--forest), var(--forest-light));
+      border-radius: var(--radius-xl);
+      padding: 40px;
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 24px;
+      margin-bottom: 48px;
+    }
+    .stats-banner-item { text-align: center; }
+    .stats-banner-num {
+      font-family: 'Bricolage Grotesque', sans-serif;
+      font-size: 2rem;
+      font-weight: 800;
+      color: var(--gold);
+      line-height: 1;
+      margin-bottom: 6px;
+    }
+    .stats-banner-label { font-size: 0.8rem; color: rgba(255,255,255,0.75); }
+    .cta-card {
+      background: var(--bg-2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-xl);
+      padding: 48px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+<div id="navbar-mount"></div>
+<div class="page-wrapper">
+
+  <!-- Hero -->
+  <div class="mission-hero">
+    <div class="container mission-hero-content">
+      <div class="section-eyebrow" style="color:rgba(255,255,255,0.65);justify-content:center;margin-bottom:16px">🌿 Our Mission</div>
+      <h1>Protecting Philippine Biodiversity Through Technology & Citizen Science</h1>
+      <p class="mission-statement">
+        "Our mission is to transform bird observations into actionable conservation insights through artificial intelligence, geospatial mapping, and citizen science."
+      </p>
+      <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+        <a href="birddex.html" class="btn btn-gold btn-lg">📖 Start Discovering</a>
+        <a href="report.html" class="btn btn-lg" style="background:rgba(255,255,255,0.1);color:white;border:1px solid rgba(255,255,255,0.3)">📍 Report a Sighting</a>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <section class="section">
+    <div class="container">
+      <div class="stats-banner">
+        <div class="stats-banner-item">
+          <div class="stats-banner-num" id="stat-birds">40+</div>
+          <div class="stats-banner-label">Bird Species Catalogued</div>
+        </div>
+        <div class="stats-banner-item">
+          <div class="stats-banner-num">4</div>
+          <div class="stats-banner-label">Philippine Regions Mapped</div>
+        </div>
+        <div class="stats-banner-item">
+          <div class="stats-banner-num" id="stat-sightings">0</div>
+          <div class="stats-banner-label">Community Sightings</div>
+        </div>
+        <div class="stats-banner-item">
+          <div class="stats-banner-num">2</div>
+          <div class="stats-banner-label">AI Detection Models</div>
+        </div>
+        <div class="stats-banner-item">
+          <div class="stats-banner-num">6</div>
+          <div class="stats-banner-label">Conservation Partners</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Mission Pillars -->
+  <section class="section-sm" style="background: var(--bg-2);">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-title-wrap">
+          <span class="section-eyebrow">🏛️ Core Pillars</span>
+          <h2>What We Do</h2>
+        </div>
+      </div>
+      <div class="pillar-grid">
+        <div class="pillar-card">
+          <div class="pillar-icon">🤖</div>
+          <div class="pillar-title">AI Bird Identification</div>
+          <p style="font-size:0.875rem;color:var(--text-muted)">Using Roboflow's computer vision models to enable anyone to identify bird species from a single photograph, making ornithology accessible to all.</p>
+        </div>
+        <div class="pillar-card">
+          <div class="pillar-icon">🗺️</div>
+          <div class="pillar-title">Geospatial Mapping</div>
+          <p style="font-size:0.875rem;color:var(--text-muted)">Building a living, real-time map of Philippine bird habitats and sightings — enabling conservationists to identify population trends and habitat threats.</p>
+        </div>
+        <div class="pillar-card">
+          <div class="pillar-icon">👥</div>
+          <div class="pillar-title">Citizen Science</div>
+          <p style="font-size:0.875rem;color:var(--text-muted)">Empowering ordinary Filipinos to become bird researchers. Every sighting report feeds into a growing scientific dataset used by conservation organizations.</p>
+        </div>
+        <div class="pillar-card">
+          <div class="pillar-icon">🎮</div>
+          <div class="pillar-title">Gamified Education</div>
+          <p style="font-size:0.875rem;color:var(--text-muted)">Making conservation engaging and addictive through a Pokédex-style collection system, XP rewards, and achievement badges that motivate continued exploration.</p>
+        </div>
+        <div class="pillar-card">
+          <div class="pillar-icon">📊</div>
+          <div class="pillar-title">Data-Driven Conservation</div>
+          <p style="font-size:0.875rem;color:var(--text-muted)">Aggregating community sightings into actionable biodiversity data that informs government policy, protected area management, and wildlife corridors.</p>
+        </div>
+        <div class="pillar-card">
+          <div class="pillar-icon">🌿</div>
+          <div class="pillar-title">Biodiversity Protection</div>
+          <p style="font-size:0.875rem;color:var(--text-muted)">Ultimately protecting the rich avian biodiversity of the Philippines — home to over 700 bird species, including 240+ endemic species found nowhere else on Earth.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Conservation Partners -->
+  <section class="section" id="partners">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-title-wrap">
+          <span class="section-eyebrow">🤝 Conservation Partners</span>
+          <h2>Working Together for Birds</h2>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:20px">
+        <div class="partner-card" id="haribon">
+          <div class="partner-logo-circle">🦅</div>
+          <div>
+            <div class="partner-name">Haribon Foundation</div>
+            <div class="partner-desc">The Philippines' pioneering bird conservation organization. Haribon has been protecting Philippine birds since 1972, conducting research, advocacy, and habitat protection programs across the archipelago.</div>
+            <a href="https://haribon.org.ph" target="_blank" style="font-size:0.8rem;color:var(--forest);font-weight:500;margin-top:8px;display:inline-block">Visit Haribon →</a>
+          </div>
+        </div>
+        <div class="partner-card" id="pef">
+          <div class="partner-logo-circle">🦁</div>
+          <div>
+            <div class="partner-name">Philippine Eagle Foundation</div>
+            <div class="partner-desc">Dedicated to the survival of the Philippine Eagle — the national bird and one of the world's most endangered raptors. The Foundation runs breeding programs, releases, and habitat protection in Mindanao.</div>
+            <a href="https://philippineeaglefoundation.org" target="_blank" style="font-size:0.8rem;color:var(--forest);font-weight:500;margin-top:8px;display:inline-block">Visit PEF →</a>
+          </div>
+        </div>
+        <div class="partner-card" id="wwf">
+          <div class="partner-logo-circle">🌿</div>
+          <div>
+            <div class="partner-name">WWF Philippines</div>
+            <div class="partner-desc">World Wildlife Fund Philippines leads conservation efforts across critical biodiversity areas including the Palawan Biosphere Reserve, Tubbataha Reef, and key Philippine forest ecosystems.</div>
+            <a href="https://wwf.org.ph" target="_blank" style="font-size:0.8rem;color:var(--forest);font-weight:500;margin-top:8px;display:inline-block">Visit WWF PH →</a>
+          </div>
+        </div>
+        <div class="partner-card" id="denr">
+          <div class="partner-logo-circle">🏛️</div>
+          <div>
+            <div class="partner-name">DENR (Dep't of Environment)</div>
+            <div class="partner-desc">The Department of Environment and Natural Resources oversees protected areas, wildlife regulations, and environmental policy in the Philippines. A key government partner for data integration.</div>
+            <a href="https://denr.gov.ph" target="_blank" style="font-size:0.8rem;color:var(--forest);font-weight:500;margin-top:8px;display:inline-block">Visit DENR →</a>
+          </div>
+        </div>
+        <div class="partner-card">
+          <div class="partner-logo-circle">🔬</div>
+          <div>
+            <div class="partner-name">Bird Researchers Network</div>
+            <div class="partner-desc">A network of academic researchers, ornithologists, and field biologists conducting scientific studies on Philippine bird populations, migration patterns, and biodiversity assessments.</div>
+          </div>
+        </div>
+        <div class="partner-card">
+          <div class="partner-logo-circle">📚</div>
+          <div>
+            <div class="partner-name">Educators & Birdwatchers Alliance</div>
+            <div class="partner-desc">A coalition of teachers, nature educators, and birdwatching clubs across the Philippines who use our platform for environmental education and community science programs.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Beneficiaries -->
+  <section class="section" style="background: var(--bg-2);">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-title-wrap">
+          <span class="section-eyebrow">👥 Platform Beneficiaries</span>
+          <h2>Who This Platform Serves</h2>
+        </div>
+      </div>
+      <div class="beneficiary-grid">
+        <div class="beneficiary-chip">
+          <div class="beneficiary-icon">🦅</div>
+          <div class="beneficiary-name">Haribon Foundation</div>
+          <div class="beneficiary-role">Conservation Data</div>
+        </div>
+        <div class="beneficiary-chip">
+          <div class="beneficiary-icon">🦁</div>
+          <div class="beneficiary-name">Philippine Eagle Foundation</div>
+          <div class="beneficiary-role">Flagship Species</div>
+        </div>
+        <div class="beneficiary-chip">
+          <div class="beneficiary-icon">🌿</div>
+          <div class="beneficiary-name">WWF Philippines</div>
+          <div class="beneficiary-role">Habitat Mapping</div>
+        </div>
+        <div class="beneficiary-chip">
+          <div class="beneficiary-icon">🏛️</div>
+          <div class="beneficiary-name">DENR</div>
+          <div class="beneficiary-role">Policy Insights</div>
+        </div>
+        <div class="beneficiary-chip">
+          <div class="beneficiary-icon">🔬</div>
+          <div class="beneficiary-name">Bird Researchers</div>
+          <div class="beneficiary-role">Scientific Data</div>
+        </div>
+        <div class="beneficiary-chip">
+          <div class="beneficiary-icon">📚</div>
+          <div class="beneficiary-name">Educators</div>
+          <div class="beneficiary-role">Environmental Ed.</div>
+        </div>
+        <div class="beneficiary-chip">
+          <div class="beneficiary-icon">🔭</div>
+          <div class="beneficiary-name">Birdwatchers</div>
+          <div class="beneficiary-role">Community Platform</div>
+        </div>
+        <div class="beneficiary-chip">
+          <div class="beneficiary-icon">🧑</div>
+          <div class="beneficiary-name">Citizen Scientists</div>
+          <div class="beneficiary-role">Data Contributors</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- How It Works Timeline -->
+  <section class="section">
+    <div class="container" style="max-width:720px">
+      <div class="section-header">
+        <div class="section-title-wrap">
+          <span class="section-eyebrow">🔄 Impact Chain</span>
+          <h2>From Sighting to Conservation</h2>
+        </div>
+      </div>
+      <div>
+        <div class="timeline-item">
+          <div class="timeline-dot">📸</div>
+          <div class="timeline-content">
+            <div class="timeline-title">Bird Sighting Observed</div>
+            <p style="font-size:0.875rem;color:var(--text-muted)">A citizen scientist spots a bird and uploads a photo to the platform using the AI identifier or manual sighting report.</p>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot">🤖</div>
+          <div class="timeline-content">
+            <div class="timeline-title">AI Identification</div>
+            <p style="font-size:0.875rem;color:var(--text-muted)">Roboflow AI models analyze the photo to identify the species with confidence scores. The user is credited XP and the bird is added to their BirdDex.</p>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot">🗺️</div>
+          <div class="timeline-content">
+            <div class="timeline-title">Geospatial Recording</div>
+            <p style="font-size:0.875rem;color:var(--text-muted)">GPS coordinates are captured and a sighting marker is added to the interactive habitat map, contributing to population distribution data.</p>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot">📊</div>
+          <div class="timeline-content">
+            <div class="timeline-title">Data Aggregation</div>
+            <p style="font-size:0.875rem;color:var(--text-muted)">Sightings are aggregated into population trend data, habitat usage statistics, and regional biodiversity indices available to conservation partners.</p>
+          </div>
+        </div>
+        <div class="timeline-item">
+          <div class="timeline-dot">🌿</div>
+          <div class="timeline-content">
+            <div class="timeline-title">Conservation Action</div>
+            <p style="font-size:0.875rem;color:var(--text-muted)">Conservation organizations use the data to prioritize habitat protection, inform government policy, and focus recovery efforts on threatened species.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="section-sm" style="background: var(--bg-2);">
+    <div class="container">
+      <div class="cta-card">
+        <div style="font-size:3rem;margin-bottom:16px">🦅</div>
+        <h2 style="margin-bottom:12px">Join the Movement</h2>
+        <p style="color:var(--text-muted);max-width:500px;margin:0 auto 28px">Be part of the growing community of citizen scientists protecting Philippine birds. Every observation matters.</p>
+        <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+          <a href="auth.html" class="btn btn-primary btn-lg">🌿 Create Account</a>
+          <a href="identify.html" class="btn btn-secondary btn-lg">🔍 Identify a Bird</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div>
+          <div class="footer-brand">
+            <img src="logo.png" alt="Logo" class="footer-logo">
+            <span style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:0.95rem;color:var(--forest)">Don't Touch My Birdie!</span>
+          </div>
+          <p class="footer-tagline">Transforming bird observations into actionable conservation insights through AI, geospatial mapping, and citizen science.</p>
+        </div>
+        <div>
+          <div class="footer-heading">Platform</div>
+          <ul class="footer-links">
+            <li><a href="birddex.html">BirdDex</a></li>
+            <li><a href="map.html">Habitat Map</a></li>
+            <li><a href="identify.html">AI Identifier</a></li>
+            <li><a href="report.html">Report Sighting</a></li>
+            <li><a href="achievements.html">Achievements</a></li>
+          </ul>
+        </div>
+        <div>
+          <div class="footer-heading">Partners</div>
+          <ul class="footer-links">
+            <li><a href="#haribon">Haribon Foundation</a></li>
+            <li><a href="#pef">Philippine Eagle Foundation</a></li>
+            <li><a href="#wwf">WWF Philippines</a></li>
+            <li><a href="#denr">DENR</a></li>
+          </ul>
+        </div>
+        <div>
+          <div class="footer-heading">Account</div>
+          <ul class="footer-links">
+            <li><a href="auth.html">Sign In</a></li>
+            <li><a href="auth.html?mode=register">Register</a></li>
+            <li><a href="achievements.html">My Progress</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>© 2025 Don't Touch My Birdie! — Protecting Philippine Biodiversity</span>
+        <span>Built for conservation 🌿</span>
+      </div>
+    </div>
+  </footer>
+</div>
+
+<script src="data/birds.js"></script>
+<script src="js/auth.js"></script>
+<script>
+  window.addEventListener('DOMContentLoaded', () => {
+    renderNavbar('mission');
+    document.getElementById('stat-birds').textContent = BIRDS.length + '+';
+    const sightings = JSON.parse(localStorage.getItem('dtmb_sightings') || '[]');
+    document.getElementById('stat-sightings').textContent = sightings.length;
+  });
+</script>
+</body>
+</html>

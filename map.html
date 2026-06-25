@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Explore Map — Don't Touch My Birdie!</title>
+  <link rel="icon" href="logo.png" type="image/png">
+  <link rel="stylesheet" href="css/app.css">
+  <!-- Leaflet CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+  <style>
+    .map-page-wrapper {
+      padding-top: 64px;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+    .map-toolbar {
+      background: var(--nav-bg);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      padding: 10px 16px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+      z-index: 400;
+      flex-shrink: 0;
+    }
+    .map-toolbar-label {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      color: var(--text-muted);
+      margin-right: 4px;
+    }
+    #birdie-map {
+      flex: 1;
+      min-height: 0;
+    }
+    /* Sidebar */
+    .map-sidebar {
+      position: absolute;
+      top: 130px;
+      right: 16px;
+      width: 280px;
+      background: var(--glass-bg);
+      backdrop-filter: blur(14px);
+      -webkit-backdrop-filter: blur(14px);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-lg);
+      padding: 16px;
+      z-index: 500;
+      max-height: calc(100vh - 180px);
+      overflow-y: auto;
+    }
+    .sidebar-title {
+      font-family: 'Bricolage Grotesque', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+      color: var(--text);
+    }
+    .region-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-md);
+      padding: 12px;
+      margin-bottom: 8px;
+      cursor: pointer;
+      transition: all var(--transition);
+    }
+    .region-card:hover { border-color: var(--forest); box-shadow: var(--shadow-sm); }
+    .region-card-name {
+      font-family: 'Bricolage Grotesque', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+    .region-pct {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+      display: flex;
+      justify-content: space-between;
+    }
+    /* Bird popup */
+    .leaflet-popup-content-wrapper {
+      background: var(--card-bg) !important;
+      border: 1px solid var(--border) !important;
+      border-radius: var(--radius-md) !important;
+      box-shadow: var(--shadow-lg) !important;
+      color: var(--text) !important;
+      padding: 0 !important;
+    }
+    .leaflet-popup-content {
+      margin: 0 !important;
+      width: 220px !important;
+    }
+    .leaflet-popup-tip { background: var(--card-bg) !important; }
+    .bird-popup {
+      overflow: hidden;
+      border-radius: var(--radius-md);
+    }
+    .bird-popup-img {
+      width: 100%;
+      height: 120px;
+      object-fit: cover;
+    }
+    .bird-popup-body {
+      padding: 12px;
+    }
+    .bird-popup-name {
+      font-family: 'Bricolage Grotesque', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 700;
+      margin-bottom: 3px;
+      color: var(--text);
+    }
+    .bird-popup-sci {
+      font-size: 0.72rem;
+      font-style: italic;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+    .bird-popup-footer {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+    }
+    .sighting-popup {
+      padding: 12px;
+    }
+    .sighting-popup h4 {
+      font-family: 'Bricolage Grotesque', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+      color: var(--text);
+    }
+    .legend {
+      position: absolute;
+      bottom: 40px;
+      left: 16px;
+      background: var(--glass-bg);
+      backdrop-filter: blur(12px);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-md);
+      padding: 12px 16px;
+      z-index: 500;
+      font-size: 0.8rem;
+    }
+    .legend-title {
+      font-family: 'Bricolage Grotesque', sans-serif;
+      font-weight: 700;
+      margin-bottom: 8px;
+      font-size: 0.8rem;
+    }
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 4px;
+      color: var(--text);
+    }
+    .legend-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+    @media (max-width: 768px) {
+      .map-sidebar {
+        right: 8px;
+        width: 200px;
+        top: auto;
+        bottom: 60px;
+        max-height: 200px;
+      }
+      .legend { display: none; }
+    }
+  </style>
+</head>
+<body>
+<div id="navbar-mount"></div>
+
+<div class="map-page-wrapper">
+  <!-- Toolbar -->
+  <div class="map-toolbar">
+    <span class="map-toolbar-label">🗺️ Filter:</span>
+    <button class="filter-btn active" data-mfilter="all" onclick="applyMapFilter('all', this)">All Birds</button>
+    <button class="filter-btn" data-mfilter="Endangered" onclick="applyMapFilter('Endangered', this)">🔴 Endangered</button>
+    <button class="filter-btn" data-mfilter="Rare" onclick="applyMapFilter('Rare', this)">🟡 Rare</button>
+    <button class="filter-btn" data-mfilter="Common" onclick="applyMapFilter('Common', this)">🟢 Common</button>
+    <button class="filter-btn" data-mfilter="Forest" onclick="applyMapFilter('Forest', this)">🌲 Forest</button>
+    <button class="filter-btn" data-mfilter="Wetland" onclick="applyMapFilter('Wetland', this)">🌊 Wetland</button>
+    <button class="filter-btn" data-mfilter="Coastal" onclick="applyMapFilter('Coastal', this)">🏖️ Coastal</button>
+    <button class="filter-btn" data-mfilter="sightings" onclick="applyMapFilter('sightings', this)">📍 Sightings</button>
+  </div>
+
+  <!-- Map -->
+  <div id="birdie-map"></div>
+</div>
+
+<!-- Sidebar -->
+<div class="map-sidebar">
+  <div class="sidebar-title">📊 Regional Progress</div>
+  <div id="region-cards"></div>
+  <div style="margin-top:8px;font-size:0.75rem;color:var(--text-muted)">
+    Click a region card to navigate there
+  </div>
+</div>
+
+<!-- Legend -->
+<div class="legend">
+  <div class="legend-title">Map Legend</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#4CAF50"></div>Common</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#FF9800"></div>Rare</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#F44336"></div>Endangered</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#607D8B"></div>Extinct</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#2196F3"></div>Sighting</div>
+</div>
+
+<!-- Leaflet JS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="data/birds.js"></script>
+<script src="js/auth.js"></script>
+<script>
+  let map;
+  let birdMarkers = [];
+  let sightingMarkers = [];
+  let currentFilter = 'all';
+
+  const statusColors = { Common: '#4CAF50', Rare: '#FF9800', Endangered: '#F44336', Extinct: '#607D8B' };
+
+  function createBirdIcon(color) {
+    return L.divIcon({
+      html: `<div style="
+        width:28px;height:28px;border-radius:50%;
+        background:${color};border:3px solid white;
+        box-shadow:0 2px 8px rgba(0,0,0,0.35);
+        display:flex;align-items:center;justify-content:center;
+        font-size:12px;
+      ">🐦</div>`,
+      iconSize: [28, 28],
+      iconAnchor: [14, 14],
+      popupAnchor: [0, -16],
+      className: ''
+    });
+  }
+
+  function createSightingIcon() {
+    return L.divIcon({
+      html: `<div style="
+        width:24px;height:24px;border-radius:50%;
+        background:#2196F3;border:2px solid white;
+        box-shadow:0 2px 6px rgba(0,0,0,0.3);
+        display:flex;align-items:center;justify-content:center;
+        font-size:11px;
+      ">📍</div>`,
+      iconSize: [24, 24],
+      iconAnchor: [12, 12],
+      popupAnchor: [0, -14],
+      className: ''
+    });
+  }
+
+  window.addEventListener('DOMContentLoaded', () => {
+    renderNavbar('map');
+
+    // Init map centered on Philippines
+    map = L.map('birdie-map', {
+      center: [12.0, 122.0],
+      zoom: 6,
+      zoomControl: true
+    });
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© <a href="https://openstreetmap.org">OpenStreetMap</a> contributors',
+      maxZoom: 18
+    }).addTo(map);
+
+    // Add all bird markers
+    BIRDS.forEach(bird => {
+      const color = statusColors[bird.status] || '#4CAF50';
+      const marker = L.marker(bird.coordinates, { icon: createBirdIcon(color) });
+      const discovered = isDiscovered(bird.id);
+
+      const popupHtml = `
+        <div class="bird-popup">
+          <img src="${bird.image}" class="bird-popup-img" 
+               onerror="this.src='https://placehold.co/220x120/1B5E20/ffffff?text=${encodeURIComponent(bird.commonName)}'">
+          <div class="bird-popup-body">
+            <div class="bird-popup-name">${bird.commonName}</div>
+            <div class="bird-popup-sci">${bird.scientificName}</div>
+            <div class="bird-popup-footer">
+              ${getStatusBadge(bird.status)}
+              ${discovered ? '<span class="badge" style="background:rgba(46,125,50,0.1);color:#2E7D32;border-color:rgba(46,125,50,0.2);font-size:0.65rem">✓ Discovered</span>' : ''}
+            </div>
+            <div style="margin-top:8px">
+              <a href="bird-profile.html?id=${bird.id}" style="
+                display:inline-block;padding:5px 10px;background:#2E7D32;color:white;
+                border-radius:6px;font-size:0.75rem;font-weight:700;text-decoration:none;
+              ">View Profile →</a>
+              ${!discovered ? `<button onclick="collectFromMap(${bird.id})" style="
+                margin-left:6px;padding:5px 10px;background:#FFD54F;color:#1f2328;
+                border:none;border-radius:6px;font-size:0.75rem;font-weight:700;cursor:pointer;
+              ">+ BirdDex</button>` : ''}
+            </div>
+          </div>
+        </div>
+      `;
+
+      marker.bindPopup(popupHtml, { maxWidth: 240 });
+      marker.birdData = bird;
+      marker.addTo(map);
+      birdMarkers.push(marker);
+    });
+
+    // Add community sightings
+    loadSightings();
+
+    // Region cards
+    renderRegionCards();
+
+    // Check URL params
+    const params = new URLSearchParams(window.location.search);
+    const birdId = parseInt(params.get('bird'));
+    if (birdId) {
+      const bird = BIRDS.find(b => b.id === birdId);
+      if (bird) {
+        map.setView(bird.coordinates, 9);
+        const marker = birdMarkers.find(m => m.birdData && m.birdData.id === birdId);
+        if (marker) setTimeout(() => marker.openPopup(), 500);
+      }
+    }
+  });
+
+  function isDiscovered(id) {
+    const user = AUTH.getUser();
+    return user && (user.discoveredBirds || []).includes(id);
+  }
+
+  function loadSightings() {
+    const sightings = JSON.parse(localStorage.getItem('dtmb_sightings') || '[]');
+    sightings.forEach(s => {
+      if (!s.lat || !s.lng) return;
+      const marker = L.marker([s.lat, s.lng], { icon: createSightingIcon() });
+      marker.bindPopup(`
+        <div class="sighting-popup">
+          <h4>📍 Community Sighting</h4>
+          <div style="font-size:0.8rem;color:var(--text-muted)">
+            <div><strong>Bird:</strong> ${s.birdName || 'Unknown'}</div>
+            <div><strong>Date:</strong> ${new Date(s.date || s.id).toLocaleDateString()}</div>
+            <div><strong>Notes:</strong> ${s.notes || '—'}</div>
+          </div>
+        </div>
+      `);
+      marker.sightingData = s;
+      marker.addTo(map);
+      sightingMarkers.push(marker);
+    });
+  }
+
+  function applyMapFilter(filter, btn) {
+    document.querySelectorAll('[data-mfilter]').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    currentFilter = filter;
+
+    birdMarkers.forEach(marker => {
+      const b = marker.birdData;
+      let show = false;
+      if (filter === 'all') show = true;
+      else if (filter === 'sightings') show = false;
+      else if (['Endangered','Rare','Common','Extinct'].includes(filter)) show = b.status === filter;
+      else if (['Forest','Wetland','Coastal'].includes(filter)) show = b.habitat === filter;
+
+      if (show) {
+        if (!map.hasLayer(marker)) marker.addTo(map);
+      } else {
+        if (map.hasLayer(marker)) map.removeLayer(marker);
+      }
+    });
+
+    sightingMarkers.forEach(marker => {
+      if (filter === 'sightings' || filter === 'all') {
+        if (!map.hasLayer(marker)) marker.addTo(map);
+      } else {
+        if (map.hasLayer(marker)) map.removeLayer(marker);
+      }
+    });
+  }
+
+  function renderRegionCards() {
+    const user = AUTH.getUser();
+    const discovered = user ? (user.discoveredBirds || []) : [];
+    const regions = [
+      { name: 'Luzon BirdDex', center: [16.0, 120.5], zoom: 7 },
+      { name: 'Mindanao BirdDex', center: [7.5, 125.0], zoom: 7 },
+      { name: 'Visayas BirdDex', center: [10.5, 124.0], zoom: 7 },
+      { name: 'Palawan BirdDex', center: [9.5, 118.5], zoom: 8 }
+    ];
+
+    const container = document.getElementById('region-cards');
+    container.innerHTML = regions.map(r => {
+      const key = r.name.replace(' BirdDex','');
+      const regionBirds = BIRDS.filter(b => b.region === key);
+      const discCount = regionBirds.filter(b => discovered.includes(b.id)).length;
+      const pct = regionBirds.length ? Math.round((discCount / regionBirds.length) * 100) : 0;
+      return `
+        <div class="region-card" onclick="flyToRegion(${r.center[0]}, ${r.center[1]}, ${r.zoom})">
+          <div class="region-card-name">${r.name}</div>
+          <div class="region-pct">
+            <span>${discCount}/${regionBirds.length} birds</span>
+            <span>${pct}%</span>
+          </div>
+          <div class="xp-bar-track"><div class="xp-bar-fill" style="width:${pct}%"></div></div>
+        </div>
+      `;
+    }).join('');
+  }
+
+  function flyToRegion(lat, lng, zoom) {
+    map.flyTo([lat, lng], zoom, { duration: 1.2 });
+  }
+
+  function collectFromMap(id) {
+    const user = AUTH.getUser();
+    if (!user) { showToast('Sign in to collect birds!', 'warning'); window.location.href = 'auth.html'; return; }
+    const result = AUTH.discoverBird(id);
+    if (result && !result.alreadyDiscovered) {
+      const xpResult = AUTH.addXP(25);
+      const bird = BIRDS.find(b => b.id === id);
+      showToast(`🐦 ${bird.commonName} discovered! +25 XP`, 'xp');
+      if (xpResult && xpResult.didLevelUp) setTimeout(() => showToast(`⭐ Level ${xpResult.newLevel}!`, 'success'), 800);
+      renderRegionCards();
+    } else {
+      showToast('Already in your BirdDex!', 'warning');
+    }
+  }
+</script>
+</body>
+</html>
