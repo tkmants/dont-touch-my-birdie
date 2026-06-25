@@ -1,0 +1,13 @@
+{
+  "name": "dont-touch-my-birdie",
+  "version": "1.0.0",
+  "private": true,
+  "description": "A gamified citizen-science platform for discovering and protecting Philippine bird species.",
+  "scripts": {
+    "dev": "serve . -l 3000",
+    "start": "serve . -l 3000"
+  },
+  "dependencies": {
+    "serve": "^14.2.4"
+  }
+}

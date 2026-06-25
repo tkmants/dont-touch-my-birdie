@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Don't Touch My Birdie! — Discover. Collect. Protect.</title>
+  <meta name="description" content="Discover birds, track habitats, protect biodiversity. A gamified bird discovery platform for the Philippines.">
+  <link rel="icon" href="logo.png" type="image/png">
+  <link rel="stylesheet" href="css/app.css">
+  <style>
+    /* ─── Homepage-specific ─── */
+    .hero-layout {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 48px;
+      align-items: center;
+    }
+    @media (max-width: 900px) {
+      .hero-layout { grid-template-columns: 1fr; }
+      .hero-visual { display: none; }
+    }
+    .hero-visual {
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .hero-bird-img {
+      width: 100%;
+      max-width: 420px;
+      border-radius: var(--radius-xl);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.4);
+      animation: floatBird 4s ease-in-out infinite;
+      border: 2px solid rgba(255,255,255,0.2);
+    }
+    @keyframes floatBird {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-14px); }
+    }
+    .featured-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 20px;
+    }
+    .featured-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      overflow: hidden;
+      cursor: pointer;
+      transition: all 0.25s ease;
+      box-shadow: var(--shadow-sm);
+      text-decoration: none;
+      color: inherit;
+      display: block;
+    }
+    .featured-card:hover {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow-lg);
+      border-color: var(--forest);
+      color: inherit;
+    }
+    .featured-card-img {
+      width: 100%;
+      height: 160px;
+      object-fit: cover;
+      background: var(--bg-3);
+    }
+    .featured-card-body { padding: 14px; }
+    .featured-card-name {
+      font-family: 'Bricolage Grotesque', sans-serif;
+      font-size: 0.95rem;
+      font-weight: 700;
+      margin-bottom: 3px;
+    }
+    .featured-card-sci {
+      font-size: 0.75rem;
+      font-style: italic;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+    .feature-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 24px;
+    }
+    .feature-item {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 28px;
+      transition: all var(--transition);
+    }
+    .feature-item:hover { box-shadow: var(--shadow-md); transform: translateY(-2px); }
+    .feature-icon {
+      font-size: 2rem;
+      margin-bottom: 16px;
+      display: block;
+    }
+    .feature-title {
+      font-family: 'Bricolage Grotesque', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    .feature-desc { font-size: 0.875rem; color: var(--text-muted); line-height: 1.6; }
+    .explorer-card {
+      background: linear-gradient(135deg, var(--forest), var(--forest-light));
+      color: white;
+      border-radius: var(--radius-xl);
+      padding: 40px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 24px;
+    }
+    .explorer-card-left h2 { color: white; margin-bottom: 8px; }
+    .explorer-card-left p { color: rgba(255,255,255,0.8); max-width: 480px; }
+    .explorer-actions { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 20px; }
+    .progress-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+    }
+    .progress-user-info {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 20px;
+    }
+    .avatar {
+      width: 52px;
+      height: 52px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--forest), var(--sky));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      flex-shrink: 0;
+    }
+    .progress-info h3 { margin: 0; font-size: 1rem; }
+    .progress-info p { font-size: 0.8rem; color: var(--text-muted); margin: 0; }
+    .progress-level-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(46,125,50,0.12);
+      color: var(--forest);
+      padding: 4px 10px;
+      border-radius: 100px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+    [data-theme="dark"] .progress-level-badge {
+      background: rgba(76,175,80,0.15);
+      color: #66BB6A;
+    }
+    .news-section { background: var(--bg-2); }
+    .news-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 20px;
+      display: flex;
+      gap: 16px;
+    }
+    .news-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: var(--radius-md);
+      background: rgba(46,125,50,0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.4rem;
+      flex-shrink: 0;
+    }
+    .news-body h4 { font-size: 0.9rem; font-weight: 700; margin-bottom: 4px; }
+    .news-body p { font-size: 0.8rem; color: var(--text-muted); }
+    .partner-logos {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+      align-items: center;
+      justify-content: center;
+    }
+    .partner-chip {
+      padding: 8px 18px;
+      border: 1px solid var(--border);
+      border-radius: 100px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      color: var(--text-muted);
+      background: var(--bg-2);
+      transition: all var(--transition);
+    }
+    .partner-chip:hover { border-color: var(--forest); color: var(--forest); }
+  </style>
+</head>
+<body>
+<div id="navbar-mount"></div>
+
+<!-- ─── HERO ─── -->
+<div class="page-wrapper">
+  <section class="hero">
+    <div class="container hero-content">
+      <div class="hero-layout">
+        <div>
+          <div class="hero-eyebrow">
+            <span>🦅</span>
+            <span>Philippine Bird Discovery Platform</span>
+          </div>
+          <h1 class="hero-title">Don't Touch My <span>Birdie!</span></h1>
+          <p class="hero-subtitle">Discover Birds. Track Habitats. Protect Biodiversity.<br>A gamified citizen science adventure for bird explorers.</p>
+          <div class="hero-cta">
+            <a href="birddex.html" class="btn btn-gold btn-lg">📖 Open BirdDex</a>
+            <a href="map.html" class="btn btn-secondary btn-lg" style="color:white;border-color:rgba(255,255,255,0.4)">🗺️ Explore Map</a>
+          </div>
+          <div class="hero-stats" id="hero-stats">
+            <div class="hero-stat">
+              <div class="hero-stat-num" id="stat-total">40</div>
+              <div class="hero-stat-label">Birds in BirdDex</div>
+            </div>
+            <div class="hero-stat">
+              <div class="hero-stat-num" id="stat-endangered">12</div>
+              <div class="hero-stat-label">Endangered Species</div>
+            </div>
+            <div class="hero-stat">
+              <div class="hero-stat-num" id="stat-discovered">0</div>
+              <div class="hero-stat-label">Birds Discovered</div>
+            </div>
+            <div class="hero-stat">
+              <div class="hero-stat-num">3</div>
+              <div class="hero-stat-label">Regions to Explore</div>
+            </div>
+          </div>
+        </div>
+        <div class="hero-visual">
+          <img src="public/birds/philippine-eagle.jpg" alt="Philippine Eagle" class="hero-bird-img">
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── USER PROGRESS (if logged in) ─── -->
+  <div id="user-progress-section" style="display:none">
+    <section class="section-sm" style="background: var(--bg-2);">
+      <div class="container">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start" id="progress-grid">
+          <!-- Filled by JS -->
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- ─── FEATURES ─── -->
+  <section class="section">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-title-wrap">
+          <span class="section-eyebrow">🌟 Platform Features</span>
+          <h2>Your Bird Discovery Adventure</h2>
+        </div>
+      </div>
+      <div class="feature-row">
+        <div class="feature-item">
+          <span class="feature-icon">📖</span>
+          <div class="feature-title">BirdDex Collection</div>
+          <p class="feature-desc">Collect and discover bird species like Pokémon cards. Each bird you identify adds to your personal BirdDex collection with detailed profiles.</p>
+          <a href="birddex.html" class="btn btn-sm btn-primary" style="margin-top:16px">Browse BirdDex →</a>
+        </div>
+        <div class="feature-item">
+          <span class="feature-icon">🗺️</span>
+          <div class="feature-title">Interactive Habitat Map</div>
+          <p class="feature-desc">Explore the Philippines on an interactive map. Discover habitat zones, sighting markers, and bird territories across Luzon, Visayas, and Mindanao.</p>
+          <a href="map.html" class="btn btn-sm btn-primary" style="margin-top:16px">Open Map →</a>
+        </div>
+        <div class="feature-item">
+          <span class="feature-icon">🔍</span>
+          <div class="feature-title">AI Bird Identifier</div>
+          <p class="feature-desc">Upload a photo and our AI instantly identifies the bird species, shows its conservation status, and links to its BirdDex entry.</p>
+          <a href="identify.html" class="btn btn-sm btn-primary" style="margin-top:16px">Identify a Bird →</a>
+        </div>
+        <div class="feature-item">
+          <span class="feature-icon">🏆</span>
+          <div class="feature-title">Gamified Progression</div>
+          <p class="feature-desc">Earn XP, level up your Explorer rank, unlock achievement badges, and maintain daily streaks as you discover more birds.</p>
+          <a href="achievements.html" class="btn btn-sm btn-primary" style="margin-top:16px">View Achievements →</a>
+        </div>
+        <div class="feature-item">
+          <span class="feature-icon">📍</span>
+          <div class="feature-title">Citizen Science</div>
+          <p class="feature-desc">Report bird sightings with photos and GPS coordinates. Your observations feed into real conservation research data.</p>
+          <a href="report.html" class="btn btn-sm btn-primary" style="margin-top:16px">Report Sighting →</a>
+        </div>
+        <div class="feature-item">
+          <span class="feature-icon">🌿</span>
+          <div class="feature-title">Conservation Mission</div>
+          <p class="feature-desc">Every sighting contributes to protecting Philippine biodiversity. Learn about conservation efforts and partner organizations.</p>
+          <a href="mission.html" class="btn btn-sm btn-primary" style="margin-top:16px">Our Mission →</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── FEATURED BIRDS ─── -->
+  <section class="section" style="background: var(--bg-2);">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-title-wrap">
+          <span class="section-eyebrow">🦜 Featured Species</span>
+          <h2>Recently Added to BirdDex</h2>
+        </div>
+        <a href="birddex.html" class="btn btn-secondary btn-sm">View All Birds →</a>
+      </div>
+      <div class="featured-grid" id="featured-birds">
+        <!-- Filled by JS -->
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── REGION PROGRESS ─── -->
+  <section class="section">
+    <div class="container">
+      <div class="section-header">
+        <div class="section-title-wrap">
+          <span class="section-eyebrow">🗺️ Regional BirdDex</span>
+          <h2>Explore the Philippines</h2>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:20px">
+        <div class="card" style="padding:24px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+            <div>
+              <div class="section-eyebrow" style="margin-bottom:4px">Region</div>
+              <h3 style="margin:0">Luzon BirdDex</h3>
+            </div>
+            <span style="font-size:2rem">🏝️</span>
+          </div>
+          <div class="xp-bar-track" style="margin-bottom:8px"><div class="xp-bar-fill" id="luzon-bar" style="width:0%"></div></div>
+          <div style="display:flex;justify-content:space-between;font-size:0.78rem;color:var(--text-muted)">
+            <span id="luzon-label">0 birds discovered</span>
+            <span id="luzon-pct">0%</span>
+          </div>
+          <div style="margin-top:16px;display:flex;flex-wrap:wrap;gap:6px" id="luzon-status"></div>
+        </div>
+        <div class="card" style="padding:24px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+            <div>
+              <div class="section-eyebrow" style="margin-bottom:4px">Region</div>
+              <h3 style="margin:0">Mindanao BirdDex</h3>
+            </div>
+            <span style="font-size:2rem">🌋</span>
+          </div>
+          <div class="xp-bar-track" style="margin-bottom:8px"><div class="xp-bar-fill" id="mindanao-bar" style="width:0%"></div></div>
+          <div style="display:flex;justify-content:space-between;font-size:0.78rem;color:var(--text-muted)">
+            <span id="mindanao-label">0 birds discovered</span>
+            <span id="mindanao-pct">0%</span>
+          </div>
+          <div style="margin-top:16px;display:flex;flex-wrap:wrap;gap:6px" id="mindanao-status"></div>
+        </div>
+        <div class="card" style="padding:24px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+            <div>
+              <div class="section-eyebrow" style="margin-bottom:4px">Region</div>
+              <h3 style="margin:0">Visayas BirdDex</h3>
+            </div>
+            <span style="font-size:2rem">🌊</span>
+          </div>
+          <div class="xp-bar-track" style="margin-bottom:8px"><div class="xp-bar-fill" id="visayas-bar" style="width:0%"></div></div>
+          <div style="display:flex;justify-content:space-between;font-size:0.78rem;color:var(--text-muted)">
+            <span id="visayas-label">0 birds discovered</span>
+            <span id="visayas-pct">0%</span>
+          </div>
+          <div style="margin-top:16px;display:flex;flex-wrap:wrap;gap:6px" id="visayas-status"></div>
+        </div>
+        <div class="card" style="padding:24px">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+            <div>
+              <div class="section-eyebrow" style="margin-bottom:4px">Region</div>
+              <h3 style="margin:0">Palawan BirdDex</h3>
+            </div>
+            <span style="font-size:2rem">🦋</span>
+          </div>
+          <div class="xp-bar-track" style="margin-bottom:8px"><div class="xp-bar-fill" id="palawan-bar" style="width:0%"></div></div>
+          <div style="display:flex;justify-content:space-between;font-size:0.78rem;color:var(--text-muted)">
+            <span id="palawan-label">0 birds discovered</span>
+            <span id="palawan-pct">0%</span>
+          </div>
+          <div style="margin-top:16px;display:flex;flex-wrap:wrap;gap:6px" id="palawan-status"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── CTA ─── -->
+  <section class="section">
+    <div class="container">
+      <div class="explorer-card">
+        <div class="explorer-card-left">
+          <h2>Start Your Explorer Journey</h2>
+          <p>Join thousands of citizen scientists protecting Philippine bird biodiversity. Discover, collect, and contribute to conservation — one bird at a time.</p>
+          <div class="explorer-actions">
+            <a href="auth.html" class="btn btn-gold btn-lg">🦅 Create Explorer Account</a>
+            <a href="birddex.html" class="btn" style="background:rgba(255,255,255,0.15);color:white;border:1px solid rgba(255,255,255,0.3)">Browse BirdDex →</a>
+          </div>
+        </div>
+        <div style="text-align:center">
+          <img src="public/birds/harpy-eagle.jpg" alt="Explorer Bird" style="width:200px;height:200px;object-fit:cover;border-radius:50%;border:4px solid rgba(255,255,255,0.3);box-shadow:0 12px 40px rgba(0,0,0,0.3)">
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── PARTNERS ─── -->
+  <section class="section-sm news-section">
+    <div class="container">
+      <div class="section-eyebrow" style="justify-content:center;margin-bottom:20px">🤝 Conservation Partners</div>
+      <div class="partner-logos">
+        <span class="partner-chip">🦅 Haribon Foundation</span>
+        <span class="partner-chip">🦁 Philippine Eagle Foundation</span>
+        <span class="partner-chip">🌿 WWF Philippines</span>
+        <span class="partner-chip">🏛️ DENR</span>
+        <span class="partner-chip">🔬 Bird Researchers Network</span>
+        <span class="partner-chip">📚 Educators Alliance</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─── FOOTER ─── -->
+  <footer class="footer">
+    <div class="container">
+      <div class="footer-grid">
+        <div>
+          <div class="footer-brand">
+            <img src="logo.png" alt="Logo" class="footer-logo">
+            <span style="font-family:'Bricolage Grotesque',sans-serif;font-weight:800;font-size:0.95rem;color:var(--forest)">Don't Touch My Birdie!</span>
+          </div>
+          <p class="footer-tagline">Transforming bird observations into actionable conservation insights through AI, geospatial mapping, and citizen science.</p>
+        </div>
+        <div>
+          <div class="footer-heading">Explore</div>
+          <ul class="footer-links">
+            <li><a href="birddex.html">BirdDex</a></li>
+            <li><a href="map.html">Habitat Map</a></li>
+            <li><a href="identify.html">AI Identifier</a></li>
+            <li><a href="report.html">Report Sighting</a></li>
+          </ul>
+        </div>
+        <div>
+          <div class="footer-heading">Platform</div>
+          <ul class="footer-links">
+            <li><a href="achievements.html">Achievements</a></li>
+            <li><a href="mission.html">Our Mission</a></li>
+            <li><a href="auth.html">Sign In</a></li>
+          </ul>
+        </div>
+        <div>
+          <div class="footer-heading">Conservation</div>
+          <ul class="footer-links">
+            <li><a href="mission.html#haribon">Haribon Foundation</a></li>
+            <li><a href="mission.html#pef">Philippine Eagle Foundation</a></li>
+            <li><a href="mission.html#wwf">WWF Philippines</a></li>
+            <li><a href="mission.html#denr">DENR</a></li>
+          </ul>
+        </div>
+      </div>
+      <div class="footer-bottom">
+        <span>© 2025 Don't Touch My Birdie! — Protecting Philippine Biodiversity</span>
+        <span>Built for conservation 🌿</span>
+      </div>
+    </div>
+  </footer>
+</div>
+
+<script src="data/birds.js"></script>
+<script src="js/auth.js"></script>
+<script>
+  window.addEventListener('DOMContentLoaded', () => {
+    renderNavbar('home');
+
+    const user = AUTH.getUser();
+
+    // Hero stats
+    const endangered = BIRDS.filter(b => b.status === 'Endangered').length;
+    document.getElementById('stat-total').textContent = BIRDS.length;
+    document.getElementById('stat-endangered').textContent = endangered;
+    if (user) {
+      document.getElementById('stat-discovered').textContent = (user.discoveredBirds || []).length;
+    }
+
+    // User progress section
+    if (user) {
+      document.getElementById('user-progress-section').style.display = '';
+      const xpProg = AUTH.getXPProgress();
+      document.getElementById('progress-grid').innerHTML = `
+        <div class="progress-card">
+          <div class="progress-user-info">
+            <div class="avatar">🦅</div>
+            <div class="progress-info">
+              <h3>${user.username}</h3>
+              <p>${user.email}</p>
+            </div>
+          </div>
+          <div class="progress-level-badge">⭐ Level ${user.level || 1} Explorer · ${user.xp || 0} XP total</div>
+          <div class="xp-bar-track" style="margin-bottom:6px">
+            <div class="xp-bar-fill" style="width:${xpProg.percent}%"></div>
+          </div>
+          <div style="display:flex;justify-content:space-between;font-size:0.75rem;color:var(--text-muted)">
+            <span>${xpProg.current} / ${xpProg.needed} XP</span>
+            <span>Next: Level ${(user.level||1)+1}</span>
+          </div>
+          <div style="margin-top:16px;display:grid;grid-template-columns:1fr 1fr;gap:10px">
+            <div style="background:var(--bg-2);border-radius:var(--radius-sm);padding:10px;text-align:center">
+              <div style="font-family:'Bricolage Grotesque',sans-serif;font-size:1.4rem;font-weight:800;color:var(--forest)">${(user.discoveredBirds||[]).length}</div>
+              <div style="font-size:0.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.04em">Birds Found</div>
+            </div>
+            <div style="background:var(--bg-2);border-radius:var(--radius-sm);padding:10px;text-align:center">
+              <div style="font-family:'Bricolage Grotesque',sans-serif;font-size:1.4rem;font-weight:800;color:var(--sky-dark)">${user.streak||0}</div>
+              <div style="font-size:0.7rem;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.04em">Day Streak</div>
+            </div>
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:12px">
+          <div style="font-family:'Bricolage Grotesque',sans-serif;font-size:1.1rem;font-weight:700">Quick Actions</div>
+          <a href="identify.html" class="btn btn-primary">🔍 Identify a Bird</a>
+          <a href="map.html" class="btn btn-sky">🗺️ Open Explorer Map</a>
+          <a href="report.html" class="btn btn-secondary">📍 Report a Sighting</a>
+          <a href="achievements.html" class="btn btn-gold">🏆 View Achievements</a>
+        </div>
+      `;
+    }
+
+    // Featured birds (show 8 random)
+    const shuffled = [...BIRDS].sort(() => Math.random() - 0.5).slice(0, 8);
+    document.getElementById('featured-birds').innerHTML = shuffled.map(b => `
+      <a href="bird-profile.html?id=${b.id}" class="featured-card">
+        <img src="${b.image}" alt="${b.commonName}" class="featured-card-img" onerror="this.src='https://placehold.co/400x200/1B5E20/ffffff?text=${encodeURIComponent(b.commonName)}'">
+        <div class="featured-card-body">
+          <div class="featured-card-name bird-name">${b.commonName}</div>
+          <div class="featured-card-sci">${b.scientificName}</div>
+          ${getStatusBadge(b.status)}
+        </div>
+      </a>
+    `).join('');
+
+    // Region progress
+    if (user) {
+      const discovered = user.discoveredBirds || [];
+      ['Luzon', 'Mindanao', 'Visayas', 'Palawan'].forEach(region => {
+        const regionBirds = BIRDS.filter(b => b.region === region);
+        const discoveredInRegion = regionBirds.filter(b => discovered.includes(b.id));
+        const pct = regionBirds.length ? Math.round((discoveredInRegion.length / regionBirds.length) * 100) : 0;
+        const key = region.toLowerCase();
+        const bar = document.getElementById(`${key}-bar`);
+        const label = document.getElementById(`${key}-label`);
+        const pctEl = document.getElementById(`${key}-pct`);
+        if (bar) bar.style.width = pct + '%';
+        if (label) label.textContent = `${discoveredInRegion.length} / ${regionBirds.length} birds`;
+        if (pctEl) pctEl.textContent = pct + '% Complete';
+        const statusEl = document.getElementById(`${key}-status`);
+        if (statusEl) {
+          const statCounts = {};
+          regionBirds.forEach(b => { statCounts[b.status] = (statCounts[b.status]||0)+1; });
+          statusEl.innerHTML = Object.entries(statCounts).map(([s,c]) => getStatusBadge(s).replace('</span>', ` × ${c}</span>`)).join('');
+        }
+      });
+    }
+  });
+</script>
+</body>
+</html>
