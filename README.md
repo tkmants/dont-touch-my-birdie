@@ -1,4 +1,5 @@
 # 🦅 Don't Touch My Birdie!
+> **Developed by:** Fia Maan R. Alaano, Thomas Anthony S. Dator, Christian Aron R. Paneda, Pauleen Ann C. Rivera, Loren N. Tababan, Sean Martin Andrei V. Tabelisma
 
 > **Discover. Collect. Protect.**
 > A gamified citizen-science platform for discovering and protecting Philippine bird species through AI, geospatial mapping, and community science.
