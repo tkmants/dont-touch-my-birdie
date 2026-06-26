@@ -155,8 +155,8 @@ npx serve .
 
 ## 🤝 Possible Beneficiaries
 
-- 🦅 [Haribon Foundation](https://haribon.org.ph)
-- 🦁 [Philippine Eagle Foundation](https://philippineeaglefoundation.org)
+- 🦚 [Haribon Foundation](https://haribon.org.ph)
+- 🦅 [Philippine Eagle Foundation](https://philippineeaglefoundation.org)
 - 🌿 [WWF Philippines](https://wwf.org.ph)
 - 🏛️ [DENR — Department of Environment and Natural Resources](https://denr.gov.ph)
 - 🔬 Bird Researchers Network
