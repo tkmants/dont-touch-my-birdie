@@ -153,7 +153,7 @@ npx serve .
 
 ---
 
-## 🤝 Conservation Partners
+## 🤝 Possible Beneficiaries
 
 - 🦅 [Haribon Foundation](https://haribon.org.ph)
 - 🦁 [Philippine Eagle Foundation](https://philippineeaglefoundation.org)
@@ -166,5 +166,5 @@ npx serve .
 
 ## 📄 License
 
-© 2025 Don't Touch My Birdie! — Protecting Philippine Biodiversity
+© 2026 Don't Touch My Birdie! — Protecting Philippine Biodiversity by Hackatoons.
 
